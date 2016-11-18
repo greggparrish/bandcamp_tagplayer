@@ -1,0 +1,7 @@
+include *.md
+include *.rst
+
+exclude *.mp3
+exclude .gitignore
+
+global-exclude *.pyc
