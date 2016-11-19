@@ -8,9 +8,7 @@ config_path = os.path.join(os.path.expanduser('~'), '.config/bandcamp_tagplayer/
 songs_db =  os.path.join(config_path, 'songs.db')
 
 class dbconn(object):
-    """
-    DB context manager
-    """
+    """ DB context manager """
     def __init__(self, path):
         self.path = path
         self.conn = None
@@ -31,9 +29,7 @@ class Database:
       self._create_table()
 
   def _create_table(self):
-    """
-    Create db tables if they don't already exist.  One for artists, albums, tags, songs, and a M2M table for album tags.
-    """
+    """ Create db tables if they don't already exist.  One for artists, albums, tags, songs, queue and a M2M table for album tags.  """
     c.execute('CREATE TABLE IF NOT EXISTS artists (artist_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, url TEXT UNIQUE)')
     c.execute('CREATE TABLE IF NOT EXISTS albums (album_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, url TEXT UNIQUE, artist_id INTEGER, FOREIGN KEY (artist_id) REFERENCES artists (artist_id) ON DELETE CASCADE ON UPDATE NO ACTION)')
     c.execute('CREATE TABLE IF NOT EXISTS songs (song_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, url text UNIQUE, album_id INTEGER, love INTEGER, ban INTEGER, plays INTEGER, saved INTEGER, FOREIGN KEY (album_id) REFERENCES albums (album_id) ON DELETE CASCADE ON UPDATE NO ACTION)')
@@ -43,9 +39,7 @@ class Database:
     conn.close()
 
   def add_album(tag,al_n,al_l,ar_n,ar_l):
-    """
-    Add album, artist, tag and song info to db
-    """
+    """ Add album, artist, tag and song info to db """
     with dbconn(songs_db) as c:
       c.execute("INSERT OR IGNORE INTO artists(name,url) VALUES(?,?)", (ar_n, ar_l))
       artist_id = c.execute("SELECT artist_id from artists where url = ?", (ar_l,)).fetchone()[0]
@@ -64,11 +58,13 @@ class Database:
       tag_id = c.execute("SELECT tag_id from tags where name = ?", (tag,)).fetchone()[0]
       return tag_id
 
+  def get_five_songs(tag_id):
+    """ Get 5 songs with chosen tag for download """
+    with dbconn(songs_db) as c:
+      songs = c.execute("SELECT artists.url AS ar_u, songs.url AS tr_l, songs.name AS tr_n, album.url AS al_u LIMIT 5").fetchall()
+
   def tagged_albums(tag_id):
-    """
-    Get album urls with chosen tag
-    """
+    """ Get album urls with chosen tag """
     with dbconn(songs_db) as c:
       albums = c.execute("SELECT artists.url AS ar_l, albums.url AS al_l, albums.album_id as al_id FROM albums INNER JOIN artists ON albums.artist_id = artists.artist_id INNER JOIN album_tags ON albums.album_id = album_tags.album_id WHERE album_tags.tag_id = ?", (tag_id,)).fetchall()
       return albums
-
