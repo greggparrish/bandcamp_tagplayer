@@ -10,12 +10,9 @@ class Util:
       url = url.split('/album/',1)[0].replace('http://','')
     return url
 
-  def get_url(ar_l,so_l):
+  def get_url(ar_l,so_l,linktype):
     if '.' in ar_l:
-      url = "http://{}/track/{}".format(ar_l,so_l)
+      url = "http://{}/{}/{}".format(ar_l,linktype,so_l)
     else:
-      url = "https://{}.bandcamp.com/track/{}".format(ar_l,so_l)
+      url = "https://{}.bandcamp.com/{}/{}".format(ar_l,linktype,so_l)
     return url
-
-
-

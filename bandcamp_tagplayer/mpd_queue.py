@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+from random import randint
 from time import sleep
 from mpd import MPDClient
+from BandcampTagplayer import Tagplayer
 
 """ 
   Get config values for mpd
@@ -33,7 +35,7 @@ class MPDConn(object):
     self.client.disconnect()
 
 class MPDQueue:
-  def add_song(song):
+  def add_song(song, tag):
     with MPDConn(host,port) as m:
       m.update('cache')
       sleep(3)
@@ -47,6 +49,14 @@ class MPDQueue:
     TODO: Check playlist.  When < 5, reload cache
     """
     with MPDConn(host,port) as m:
-      songs_left = m.status()['playlistlength']
-      print(m.status()['playlistlength'])
+      while True:
+        songs_left = m.status()['playlistlength']
+        print("Number in playlist: {}".format(songs_left))
+        if songs_left > 3:
+          page = randint(0,10)
+          Tagplayer().get_album_meta(page)
+          #self.get_album_meta(tag, 1) 
+          #def get_album_meta(self, tag, page):
+        else:
+          sleep(2)
 

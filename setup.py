@@ -5,9 +5,9 @@ from setuptools import setup, find_packages
 version = '0.0.1'
 
 setup(
-    name='bandcamp-tagplayer',
+    name='bandcamp_tagplayer',
     version=version,
-    description='bandcamp-tagplayer creates a radio stream from Bandcamp tags.',
+    description='Bandcamp_tagplayer creates a playlist from Bandcamp tags.',
     long_description=open('README.md').read(),
     author='Gregory Parrish',
     author_email='gregg.alb@gmail.com',
@@ -21,10 +21,7 @@ setup(
         'docopt>=0.6.2',
         'lxml>=3.6.4',
         'mutagen>=1.35.1',
-        'ply>=3.9',
-        'slimit>=0.8.1',
         'slugify>=0.0.1',
-        'wgetter>=0.6',
     ],
     entry_points={
         'console_scripts': [

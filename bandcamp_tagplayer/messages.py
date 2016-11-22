@@ -4,6 +4,9 @@
 from clint.textui import colored, puts
 
 class Messages:
+  def creating_db():
+    print(colored.green("Creating database"))
+
   def current_song(song):
     print("Now playing: {} by {} from {}".format(song.name, song.artist, song.album))
 
@@ -22,5 +25,8 @@ class Messages:
   def results_found(tag):
     print(colored.green("Downloading metadata for {} albums".format(tag)))
 
-  def writing_metadata(song):
-    print(colored.green("Writing metadata for {}".format(song)))
+  def writing_metadata(song, artist):
+    print(colored.green("Writing metadata for {} by {}".format(song, artist)))
+
+  def related_tags(tags):
+    print(colored.green("Related tags: "),colored.red("{}").format(tags))

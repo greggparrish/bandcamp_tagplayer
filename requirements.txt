@@ -6,4 +6,3 @@ ply==3.9
 requests==2.12.0
 slimit==0.8.1
 slugify==0.0.1
-wgetter==0.6

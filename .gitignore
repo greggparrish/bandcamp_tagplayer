@@ -16,5 +16,7 @@ files/
 *.mp3
 **/*.mp3
 *.pyc
+*.db
+*.swp
 
 bandcamp_tagplayer/scraps
