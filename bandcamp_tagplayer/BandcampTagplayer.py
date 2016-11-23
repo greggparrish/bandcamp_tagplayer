@@ -3,15 +3,11 @@
 
 """
   TODO: 
-    - fix update album data loop
-    - When to pull from tagged songs vs albums, how to balance newer tracks vs pulling from db
-    - url in comments
-    - rm playcount, download from songs 
+    - if mpd playing, get genre, ask if want more
     - symlink cache dir to mpd music_dir
-    - be able to hot key open current track in browser
     - arg to rebuild db
-    - add year to metadata
     - turn mpd random on/off through ui
+    - clean cache
     - first album grab get popular (?sort_field=pop), second or update get new(?sort_field=date)
     - set number to add to playlist in conf, use in db
 """
@@ -25,6 +21,7 @@ from mutagen.id3 import TIT2, COMM, ID3NoHeaderError
 from mutagen.easyid3 import EasyID3
 import os
 import random
+from random import randint
 import re
 import requests
 from slugify import slugify
@@ -32,9 +29,8 @@ import subprocess
 
 import config
 import db
-from util import Util as util
-from messages import Messages
 from mpd_queue import MPDQueue
+from messages import Messages
 
 db = db.Database
 cache_dir = config.cache_dir
@@ -42,23 +38,15 @@ save_dir = config.save_dir
 
 class Tagplayer:
   def __init__(self):
-    db()
+    d = db()
 
   def ask_for_tag(self):
     tag = input("Enter a tag: ")
-    self.existing_songs(tag.lower())
-
-  def existing_songs(self, tag):
     tag = slugify(tag)
-    tag_id = db.get_tag_id(tag)
-    albums = db.tagged_albums(tag_id) 
-    if len(albums) > 5:
-      self.get_song_meta(tag, tag_id, albums)
-    else: 
-      self.get_album_meta(tag, 1) 
+    self.get_album_meta(tag, 1)
 
   def get_album_meta(self, tag, page):
-    """ Get albums, artists and links for a given tag, insert into db """
+    """ Get album urls """
     sort = 'pop' if page is 1 else 'date'
     r = requests.get('https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(tag, page, sort))
     if r.status_code != 404:
@@ -74,98 +62,94 @@ class Tagplayer:
       else:
         albums = []
         for a in album_list:
-          al_n = a.find('div', class_='itemtext').text
-          link = a.find('a')['href']
-          ar_n = a.find('div', class_='itemsubtext').text
-          ar_l = util.format_url(link) 
-          al_l = link.split('/album/')[1]
-          tag_id,al_id = db.add_album(tag.strip(), al_n, al_l, ar_n, ar_l)
-          albums += [[ar_l,al_l,al_id]]
-  self.get_song_meta(tag, tag_id, None)
+          album_link = a.find('a')['href']
+          albums += [[album_link]]
+    self.get_song_meta(albums, tag)
 
-  def get_song_meta(self, tag, tag_id, albums):
-    """ Choose random song from album, get metadata for that song """
+  def get_song_meta(self, albums, tag):
+    """ Choose random song from album, 
+    get metadata (artist, title, album, price, date, dl_url for that song """
     Messages.getting_song_meta(tag)
-    print(albums)
-    if albums == None:
-      albums = db.tagged_albums(tag_id) 
-    for a in albums:
-      url = util.get_url(a[0],a[1],'album') 
-      print(url)
+    r_albums = random.sample(albums, 3)
+    for a in r_albums:
+      url = a[0]
       r = requests.get(url)
       if r.status_code != 404:
+        """ price """
+        soup = BeautifulSoup(r.text, 'lxml')
+        try:
+          pricebox = soup.find('li', class_='buyItem')
+          pricebox_h4 = pricebox.find('h4')
+          price = pricebox_h4.find('span', class_='base-text-color').text
+          currency = pricebox_h4.find('span', class_='buyItemExtra secondaryText').text
+        except:
+          price = currency = ''
+
+        """ album meta """
+        artist = soup.find('span', itemprop='byArtist')  
+        artist = artist.find('a').text
+        album_title = soup.find('h2', class_='trackTitle').text 
+
+        date = soup.find('div', class_='tralbum-credits').text
+        date = re.search('\d{4}', date).group(0)
+        """ song meta from trackinfo """
         songs = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
         songs_j = json.loads("["+songs+"]")
         s = random.choice(songs_j)
-        s['title_link'] = "" if s['title_link'] is None else s['title_link']
-        db.add_song(a[2], s['title'], s['title_link'].replace('/track/',''))
-      else:
-        pass
-    self.download_song(tag_id, tag)
 
-  def download_song(self, tag_id, tag):
-    songs = db.get_songs(tag_id)
-    Messages.loading_cache()
-    print(len(songs))
-    for s in songs:
-      song_url = util.get_url(s[0],s[1], 'track') 
-      dl_url = self.get_mp3_url(song_url, s[6])
-      metadata = {
-        'artist': s[3],
-        'so_title': s[4],
-        'album': s[5],
-        'song_url': song_url,
-        'genre': tag,
-        'comment': song_url
-      }
-      filename = slugify(metadata['artist'])+'_'+slugify(metadata['so_title'])+'.mp3'
-      path = os.path.join(cache_dir, filename)
-      """ If exists, load, if not dl """
-      if os.path.isfile(path) is True:
-        song = cache_dir.split('/')[-1]+'/'+filename 
-        print(song)
-        MPDQueue.add_song(song)
-      else:
-        r = requests.get(dl_url, stream=dl_url)
-        print("Now loading: {} by {}".format(metadata['so_title'],metadata['artist']))
-        with open(path, 'wb') as t:
-          total_length = int(r.headers.get('content-length', 0))
-          for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
-            if chunk:
-              t.write(chunk)
-              t.flush()
-        song = cache_dir.split('/')[-1]+'/'+filename 
-        print(song)
-        self.write_ID3_tags(filename,metadata)
-        MPDQueue.add_song(song)
+        if s['file']['mp3-128']:
+          metadata = {
+            'artist': artist.strip(),
+            'track': s['title'],
+            'album': album_title.strip(),
+            'price': price, 
+            'currency': currency,
+            'date': date, 
+            'album_url': url,
+            'dl_url': s['file']['mp3-128'],
+            'genre': tag,
+          }
+          self.download_song(metadata, tag)
     MPDQueue.watch_playlist(tag)
+    page = randint(0,10)
+    self.get_album_meta(tag, 2)
 
-  def get_mp3_url(self,song_page,song_id):
-    r = requests.get(song_page)
-    if r.status_code != 404:
-      meta = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
-      mj = json.loads("["+meta+"]")
-      if mj[0]['file'] is None:
-        """ No file available so ban song """
-        db.ban_song(song_id)
-      else:
-        dl_url = "http:"+mj[0]['file']['mp3-128']
-      return dl_url
+  def download_song(self, metadata, tag):
+    dl_url = 'http:'+metadata['dl_url']
+    filename = slugify(metadata['artist'])+'_'+slugify(metadata['track'])+'.mp3'
+    path = os.path.join(cache_dir, filename)
+    """ If exists, load, if not dl """
+    if os.path.isfile(path) is True:
+      song = cache_dir.split('/')[-1]+'/'+filename 
+      MPDQueue.add_song(song)
+    else:
+      r = requests.get(dl_url, stream=dl_url)
+      print("Now loading: {} by {}".format(metadata['track'],metadata['artist']))
+      with open(path, 'wb') as t:
+        total_length = int(r.headers.get('content-length', 0))
+        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
+          if chunk:
+            t.write(chunk)
+            t.flush()
+      rel_path = cache_dir.split('/')[-1]+'/'+filename 
+      self.write_ID3_tags(filename,metadata)
+      MPDQueue.add_song(rel_path, tag)
 
   def write_ID3_tags(self, filename, metadata):
-    Messages.writing_metadata(metadata['so_title'], metadata['artist'])
     path = os.path.join(cache_dir, filename)
     song = MP3(path)
-    #song['COMM'] = COMM(encoding=3, text=metadata['comment'], lang='eng')
+    #song['COMM'] = COMM(encoding=3, text=metadata['album_url'], lang='eng')
     song.save()
     try:
       song = EasyID3(path)
     except ID3NoHeaderError:
       song = File(path, easy=True)
-    song['title'] = metadata['so_title']
+    song['title'] = metadata['track']
     song['artist'] = metadata['artist']
     song['album'] = metadata['album']
-    song['genre'] = metadata['genre'].title().replace('-','')
+    song['genre'] = metadata['genre'].title().replace('-',' ')
+    song['date'] = metadata['date']
+    song['website'] = metadata['album_url']
     song.save()
 
 t = Tagplayer()
