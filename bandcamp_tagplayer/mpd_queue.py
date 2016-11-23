@@ -48,6 +48,7 @@ class MPDQueue:
     """
     with MPDConn(host,port) as m:
       while True:
+        songs_left = m.status()['playlistlength']
         if songs_left < '4':
           break
           #self.get_album_meta(tag, 1) 

@@ -4,11 +4,6 @@ Bandcamp_tagplayer pulls songs from bandcamp based on tag and adds them to the c
 
 It's still very much a WIP.
 
-REQUIRES
-------------
-- python3
-- mpd
-
 TODO:
 -----
 - Clean cache

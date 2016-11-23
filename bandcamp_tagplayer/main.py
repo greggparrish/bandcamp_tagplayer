@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-  TODO: 
+  TODO:
     - if mpd playing, get genre, ask if want more
     - symlink cache dir to mpd music_dir
     - arg to rebuild db
     - turn mpd random on/off through ui
     - clean cache
-    - first album grab get popular (?sort_field=pop), second or update get new(?sort_field=date)
+    - first album grab get popular (?sort_field=pop)
+    - second or update get new(?sort_field=date)
     - set number to add to playlist in conf, use in db
 """
 
@@ -35,6 +36,7 @@ from messages import Messages
 db = db.Database
 cache_dir = config.cache_dir
 save_dir = config.save_dir
+
 
 class Tagplayer:
   def __init__(self):
@@ -67,7 +69,7 @@ class Tagplayer:
     self.get_song_meta(albums, tag)
 
   def get_song_meta(self, albums, tag):
-    """ Choose random song from album, 
+    """ Choose random song from album,
     get metadata (artist, title, album, price, date, dl_url for that song """
     Messages.getting_song_meta(tag)
     r_albums = random.sample(albums, 3)
@@ -86,9 +88,9 @@ class Tagplayer:
           price = currency = ''
 
         """ album meta """
-        artist = soup.find('span', itemprop='byArtist')  
+        artist = soup.find('span', itemprop='byArtist')
         artist = artist.find('a').text
-        album_title = soup.find('h2', class_='trackTitle').text 
+        album_title = soup.find('h2', class_='trackTitle').text
 
         date = soup.find('div', class_='tralbum-credits').text
         date = re.search('\d{4}', date).group(0)
@@ -102,16 +104,16 @@ class Tagplayer:
             'artist': artist.strip(),
             'track': s['title'],
             'album': album_title.strip(),
-            'price': price, 
+            'price': price,
             'currency': currency,
-            'date': date, 
+            'date': date,
             'album_url': url,
             'dl_url': s['file']['mp3-128'],
             'genre': tag,
           }
           self.download_song(metadata, tag)
     MPDQueue.watch_playlist(tag)
-    page = randint(0,10)
+    page = randint(0, 10)
     self.get_album_meta(tag, 2)
 
   def download_song(self, metadata, tag):
@@ -120,25 +122,24 @@ class Tagplayer:
     path = os.path.join(cache_dir, filename)
     """ If exists, load, if not dl """
     if os.path.isfile(path) is True:
-      song = cache_dir.split('/')[-1]+'/'+filename 
+      song = cache_dir.split('/')[-1]+'/'+filename
       MPDQueue.add_song(song)
     else:
       r = requests.get(dl_url, stream=dl_url)
-      print("Now loading: {} by {}".format(metadata['track'],metadata['artist']))
+      print("Now loading: {} by {}".format(metadata['track'], metadata['artist']))
       with open(path, 'wb') as t:
         total_length = int(r.headers.get('content-length', 0))
         for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
           if chunk:
             t.write(chunk)
             t.flush()
-      rel_path = cache_dir.split('/')[-1]+'/'+filename 
+      rel_path = cache_dir.split('/')[-1]+'/'+filename
       self.write_ID3_tags(filename,metadata)
       MPDQueue.add_song(rel_path, tag)
 
   def write_ID3_tags(self, filename, metadata):
     path = os.path.join(cache_dir, filename)
     song = MP3(path)
-    #song['COMM'] = COMM(encoding=3, text=metadata['album_url'], lang='eng')
     song.save()
     try:
       song = EasyID3(path)
