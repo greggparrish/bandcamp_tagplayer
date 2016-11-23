@@ -13,6 +13,7 @@
     - second or update get new(?sort_field=date)
     - set number to add to playlist in conf, use in db
     - rm unused messages
+    - status idle message
 """
 
 from bs4 import BeautifulSoup
