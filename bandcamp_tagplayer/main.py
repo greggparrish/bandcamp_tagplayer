@@ -3,6 +3,7 @@
 
 """
   TODO:
+    - always get random page, switch between pop and new
     - if mpd playing, get genre, ask if want more
     - symlink cache dir to mpd music_dir
     - arg to rebuild db
@@ -11,6 +12,7 @@
     - first album grab get popular (?sort_field=pop)
     - second or update get new(?sort_field=date)
     - set number to add to playlist in conf, use in db
+    - rm unused messages
 """
 
 from bs4 import BeautifulSoup
@@ -45,11 +47,12 @@ class Tagplayer:
   def ask_for_tag(self):
     tag = input("Enter a tag: ")
     tag = slugify(tag)
-    self.get_album_meta(tag, 1)
+    self.get_album_meta(tag)
 
-  def get_album_meta(self, tag, page):
+  def get_album_meta(self, tag):
     """ Get album urls """
-    sort = 'pop' if page is 1 else 'date'
+    page = randint(0, 10)
+    sort = random.choice(['pop','new'])
     r = requests.get('https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(tag, page, sort))
     if r.status_code != 404:
       Messages.results_found(tag)
@@ -112,35 +115,32 @@ class Tagplayer:
             'genre': tag,
           }
           self.download_song(metadata, tag)
-    MPDQueue.watch_playlist(tag)
+    MPDQueue.watch_playlist()
     page = randint(0, 10)
-    self.get_album_meta(tag, 2)
+    self.get_album_meta(tag)
 
   def download_song(self, metadata, tag):
     dl_url = 'http:'+metadata['dl_url']
     filename = slugify(metadata['artist'])+'_'+slugify(metadata['track'])+'.mp3'
     path = os.path.join(cache_dir, filename)
     """ If exists, load, if not dl """
+    rel_path = cache_dir.split('/')[-1]+'/'+filename
     if os.path.isfile(path) is True:
-      song = cache_dir.split('/')[-1]+'/'+filename
-      MPDQueue.add_song(song)
+      MPDQueue.add_song(rel_path)
     else:
       r = requests.get(dl_url, stream=dl_url)
-      print("Now loading: {} by {}".format(metadata['track'], metadata['artist']))
+      Messages.now_loading(metadata['artist'], metadata['track'])
       with open(path, 'wb') as t:
         total_length = int(r.headers.get('content-length', 0))
         for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
           if chunk:
             t.write(chunk)
             t.flush()
-      rel_path = cache_dir.split('/')[-1]+'/'+filename
       self.write_ID3_tags(filename,metadata)
-      MPDQueue.add_song(rel_path, tag)
+      MPDQueue.add_song(rel_path)
 
   def write_ID3_tags(self, filename, metadata):
     path = os.path.join(cache_dir, filename)
-    song = MP3(path)
-    song.save()
     try:
       song = EasyID3(path)
     except ID3NoHeaderError:

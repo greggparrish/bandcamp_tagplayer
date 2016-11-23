@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from time import sleep
+from messages import Messages
 from mpd import MPDClient
 
 """ 
@@ -10,6 +11,7 @@ from mpd import MPDClient
   Create symlink in music dir
   Get random state and reset to user state on tagplayer exit
 """  
+
 cache_sym = 'cache'
 port = 6600
 host = "localhost"
@@ -33,7 +35,7 @@ class MPDConn(object):
     self.client.disconnect()
 
 class MPDQueue:
-  def add_song(song, tag):
+  def add_song(song):
     with MPDConn(host,port) as m:
       m.update('cache')
       sleep(3)
@@ -42,17 +44,15 @@ class MPDQueue:
       if play_state is not 'play':
         m.play()
 
-  def watch_playlist(tag):
+  def watch_playlist():
     """
-    TODO: Check playlist.  When < 5, reload cache
+    Check playlist every 2 seconds, if under 4, get more
     """
     with MPDConn(host,port) as m:
       while True:
         songs_left = m.status()['playlistlength']
         if songs_left < '4':
           break
-          #self.get_album_meta(tag, 1) 
-          #def get_album_meta(self, tag, page):
         else:
           sleep(2)
 
