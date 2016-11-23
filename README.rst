@@ -1,5 +1,19 @@
 ABOUT
 -----
-WIP to play tracks from Bandcamp based on tags.
+Bandcamp_tagplayer pulls songs from bandcamp based on tag and adds them to the current MPD playlist.
 
-Currently nowhere near actually working.
+It's still very much a WIP.
+
+REQUIRES
+------------
+- python3
+- mpd
+
+TODO:
+-----
+- Clean cache
+- Symlink mpd music_dir
+- Create cleaner UI
+- Add config options for MPD
+- Add config example 
+
