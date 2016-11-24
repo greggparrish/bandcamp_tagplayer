@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from time import sleep
+from blessed import Terminal
 from messages import Messages
 from mpd import MPDClient
+from time import sleep
 
 """ 
   Get config values for mpd
@@ -34,7 +35,7 @@ class MPDConn(object):
     self.client.close()
     self.client.disconnect()
 
-class MPDQueue:
+class MPDQueue(object):
   def add_song(song):
     with MPDConn(host,port) as m:
       m.update('cache')
@@ -44,15 +45,35 @@ class MPDQueue:
       if play_state is not 'play':
         m.play()
 
-  def watch_playlist():
+  def _check_playlist(self):
+    with MPDConn(host,port) as m:
+      songs_left = m.status()['playlistlength']
+    return songs_left
+
+  def watch_playlist(self, tag):
     """
     Check playlist every 2 seconds, if under 4, get more
     """
     with MPDConn(host,port) as m:
       while True:
-        songs_left = m.status()['playlistlength']
+        songs_left = self._check_playlist()
         if songs_left < '4':
           break
         else:
+          self._write_status(songs_left, tag)
           sleep(2)
 
+  def _write_status(self, songs_left, tag):
+    with MPDConn(host,port) as m:
+      cs = m.currentsong()
+      term = Terminal()
+      print(term.clear())
+      with term.hidden_cursor():
+        with term.location(0, term.height - 6):
+          print("Tag: {}".format(tag.title()))
+          print("Current song: {} by {} (genre: {})".format(cs['title'],cs['artist'],cs['genre']))
+          print("{} in playlist".format(songs_left))
+          print("[b]an song, [B]an album, [c]hange tag, [q]uit:")
+
+#m = MPDQueue()
+#m.watch_playlist()

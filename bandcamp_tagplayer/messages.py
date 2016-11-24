@@ -17,7 +17,7 @@ class Messages:
     print(colored.red("No results for tag: "), colored.green("{}".format(tag)))
 
   def now_loading(artist, track):
-    print(colored.red("Now loading: {} by {}".format(artist, track)))
+    print(colored.red("Now loading: {} by {}".format(track, artist)))
 
   def results_found(tag):
     print(colored.green("Downloading metadata for {} albums".format(tag)))

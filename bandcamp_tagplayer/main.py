@@ -48,6 +48,7 @@ class Tagplayer:
   def ask_for_tag(self):
     tag = input("Enter a tag: ")
     tag = slugify(tag)
+    MPDQueue().watch_playlist(tag)
     self.get_album_meta(tag)
 
   def get_album_meta(self, tag):
@@ -75,7 +76,6 @@ class Tagplayer:
   def get_song_meta(self, albums, tag):
     """ Choose random song from album,
     get metadata (artist, title, album, price, date, dl_url for that song """
-    Messages.getting_song_meta(tag)
     r_albums = random.sample(albums, 3)
     for a in r_albums:
       url = a[0]
