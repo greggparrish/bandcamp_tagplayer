@@ -1,10 +1,12 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 from blessed import Terminal
+from time import sleep
+
+from db import Database
 from messages import Messages
 from mpd import MPDClient
-from time import sleep
+import utils
 
 """ 
   Get config values for mpd
@@ -45,19 +47,38 @@ class MPDQueue(object):
       if play_state is not 'play':
         m.play()
 
-  def _check_playlist(self):
-    with MPDConn(host,port) as m:
-      songs_left = m.status()['playlistlength']
-    return songs_left
-
   def watch_playlist(self, tag):
     """
-    Check playlist every 2 seconds, if under 4, get more
+    Check playlist every 2 seconds, if under 4 tracks, get more
     """
+    term = Terminal()
+    print(term.clear())
     with MPDConn(host,port) as m:
+      change = False
       while True:
-        songs_left = self._check_playlist()
-        if songs_left < '4':
+        songs_left = m.status()['playlistlength']
+        with term.location(0, term.height - 1):
+          with term.cbreak():
+            c = term.inkey(1)
+            if c == 'c':
+              change = True
+              return change
+              break
+            if c =='q':
+              print(term.clear())
+              print(term.normal)
+              exit()
+            if c == 'B':
+              pass
+            if c == 'b':
+              pass
+            if c == 's':
+              filename = m.currentsong()['file']
+              utils.save_track_info(filename)
+            if c == 'w':
+              filename = m.currentsong()['file']
+              utils.browser(filename)
+        if int(songs_left) < 4:
           break
         else:
           self._write_status(songs_left, tag)
@@ -66,14 +87,11 @@ class MPDQueue(object):
   def _write_status(self, songs_left, tag):
     with MPDConn(host,port) as m:
       cs = m.currentsong()
+      genre = cs.get('genre', '')
       term = Terminal()
-      print(term.clear())
       with term.hidden_cursor():
-        with term.location(0, term.height - 6):
-          print("Tag: {}".format(tag.title()))
-          print("Current song: {} by {} (genre: {})".format(cs['title'],cs['artist'],cs['genre']))
-          print("{} in playlist".format(songs_left))
-          print("[b]an song, [B]an album, [c]hange tag, [q]uit:")
-
-#m = MPDQueue()
-#m.watch_playlist()
+        with term.location(0, term.height - 5):
+          print(term.clear_eol+"Search tag: {}".format(tag.title()))
+          print(term.clear_eol+"{} in playlist".format(songs_left))
+          print(term.clear_eol+"Current song: {} by {} (genre: {})".format(cs['title'],cs['artist'], genre))
+          print("[b]an song, [B]an artist, [c]hange tag, [w]ebsite, [s]ave info, [q]uit: ")

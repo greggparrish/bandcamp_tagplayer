@@ -1,8 +1,8 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 """
   TODO:
+    - replace clint with blessed formatting
     - always get random page, switch between pop and new
     - if mpd playing, get genre, ask if want more
     - symlink cache dir to mpd music_dir
@@ -29,27 +29,30 @@ from random import randint
 import re
 import requests
 from slugify import slugify
-import subprocess
 
 import config
-import db
 from mpd_queue import MPDQueue
 from messages import Messages
+from blessed import Terminal
 
-db = db.Database
 cache_dir = config.cache_dir
-save_dir = config.save_dir
-
+browser = config.browser
 
 class Tagplayer:
-  def __init__(self):
-    d = db()
-
   def ask_for_tag(self):
+    print(browser)
+    term = Terminal()
+    print(term.clear())
     tag = input("Enter a tag: ")
     tag = slugify(tag)
-    MPDQueue().watch_playlist(tag)
-    self.get_album_meta(tag)
+    self.monitor_mpd(tag)
+
+  def monitor_mpd(self, tag):
+    change = MPDQueue().watch_playlist(tag)
+    while change is True:
+      self.ask_for_tag()
+    else:
+      self.get_album_meta(tag)
 
   def get_album_meta(self, tag):
     """ Get album urls """
@@ -76,7 +79,7 @@ class Tagplayer:
   def get_song_meta(self, albums, tag):
     """ Choose random song from album,
     get metadata (artist, title, album, price, date, dl_url for that song """
-    r_albums = random.sample(albums, 3)
+    r_albums = random.sample(albums, 4)
     for a in r_albums:
       url = a[0]
       r = requests.get(url)
@@ -103,7 +106,7 @@ class Tagplayer:
         songs_j = json.loads("["+songs+"]")
         s = random.choice(songs_j)
 
-        if s['file']['mp3-128']:
+        if s['file'] != None:
           metadata = {
             'artist': artist.strip(),
             'track': s['title'],
@@ -116,7 +119,7 @@ class Tagplayer:
             'genre': tag,
           }
           self.download_song(metadata, tag)
-    MPDQueue.watch_playlist()
+    MPDQueue().watch_playlist(tag)
     page = randint(0, 10)
     self.get_album_meta(tag)
 

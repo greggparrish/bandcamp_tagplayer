@@ -10,10 +10,19 @@ ConfigPath = os.path.join(os.path.expanduser('~'), '.config/bandcamp_tagplayer/'
 conf = configparser.ConfigParser()
 conf.read(ConfigPath+'config')
 
-cache_dir = conf['storage']['cache']
-save_dir = conf['storage']['save']
+def format_path(path):
+  if '~' in path:
+    path = os.path.expanduser(path)
 
-if '~' in cache_dir:
-  cache_dir = os.path.expanduser(cache_dir)
-if not os.path.exists(cache_dir):
-  os.makedirs(cache_dir)
+cache_dir = format_path(conf['storage']['cache'])
+save_file = format_path(conf['storage']['save_file'])
+music_dir = format_path(conf['mpd']['music_dir'])
+browser = conf['browser']['browser']
+
+"""
+def build_dirs(path):    
+  if not os.path.exists(path):
+    os.makedirs(path)
+  return path
+"""
+
