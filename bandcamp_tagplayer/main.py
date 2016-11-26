@@ -16,17 +16,19 @@
     - status idle message
 """
 
-from bs4 import BeautifulSoup
-from clint.textui import progress
 import json
-from mutagen import File
-from mutagen.mp3 import MP3
-from mutagen.id3 import TIT2, COMM, ID3NoHeaderError
-from mutagen.easyid3 import EasyID3
 import os
 import random
 from random import randint
 import re
+import time
+
+from bs4 import BeautifulSoup
+from clint.textui import progress
+from mutagen import File
+from mutagen.mp3 import MP3
+from mutagen.id3 import TIT2, COMM, ID3NoHeaderError
+from mutagen.easyid3 import EasyID3
 import requests
 from slugify import slugify
 
@@ -40,7 +42,6 @@ browser = config.browser
 
 class Tagplayer:
   def ask_for_tag(self):
-    print(browser)
     term = Terminal()
     print(term.clear())
     tag = input("Enter a tag: ")
@@ -52,9 +53,10 @@ class Tagplayer:
     while change is True:
       self.ask_for_tag()
     else:
-      self.get_album_meta(tag)
+      print(change)
+      self.get_albums(tag)
 
-  def get_album_meta(self, tag):
+  def get_albums(self, tag):
     """ Get album urls """
     page = randint(0, 10)
     sort = random.choice(['pop','new'])
@@ -72,8 +74,7 @@ class Tagplayer:
       else:
         albums = []
         for a in album_list:
-          album_link = a.find('a')['href']
-          albums += [[album_link]]
+          albums.append([a.find('a')['href']])
     self.get_song_meta(albums, tag)
 
   def get_song_meta(self, albums, tag):
@@ -84,35 +85,25 @@ class Tagplayer:
       url = a[0]
       r = requests.get(url)
       if r.status_code != 404:
-        """ price """
         soup = BeautifulSoup(r.text, 'lxml')
-        try:
-          pricebox = soup.find('li', class_='buyItem')
-          pricebox_h4 = pricebox.find('h4')
-          price = pricebox_h4.find('span', class_='base-text-color').text
-          currency = pricebox_h4.find('span', class_='buyItemExtra secondaryText').text
-        except:
-          price = currency = ''
-
-        """ album meta """
+        """ album meta from bs4 & current: """
         artist = soup.find('span', itemprop='byArtist')
         artist = artist.find('a').text
-        album_title = soup.find('h2', class_='trackTitle').text
-
-        date = soup.find('div', class_='tralbum-credits').text
-        date = re.search('\d{4}', date).group(0)
-        """ song meta from trackinfo """
+        bc_meta = re.search('current\: (.*?)},', r.text).group(1)
+        m_json = json.loads(bc_meta+'}')
+        date = re.search('\d{4}', str(m_json['release_date'])).group(0)
+        """ song meta from trackinfo: """
         songs = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
-        songs_j = json.loads("["+songs+"]")
-        s = random.choice(songs_j)
+        s_json = json.loads("["+songs+"]")
+        s = random.choice(s_json)
 
         if s['file'] != None:
           metadata = {
-            'artist': artist.strip(),
+            'artist': artist,
+            'artist_id': str(m_json['band_id']),
             'track': s['title'],
-            'album': album_title.strip(),
-            'price': price,
-            'currency': currency,
+            'track_id': str(s['track_id']),
+            'album': m_json['title'],
             'date': date,
             'album_url': url,
             'dl_url': s['file']['mp3-128'],
@@ -120,12 +111,13 @@ class Tagplayer:
           }
           self.download_song(metadata, tag)
     MPDQueue().watch_playlist(tag)
-    page = randint(0, 10)
-    self.get_album_meta(tag)
+    self.get_albums(tag)
 
   def download_song(self, metadata, tag):
     dl_url = 'http:'+metadata['dl_url']
-    filename = slugify(metadata['artist'])+'_'+slugify(metadata['track'])+'.mp3'
+    timestamp = int(time.time())
+    fn = ['bctcache', str(timestamp), metadata['artist_id'], metadata['track_id']]
+    filename = '_'.join(fn)+'.mp3'
     path = os.path.join(cache_dir, filename)
     """ If exists, load, if not dl """
     rel_path = cache_dir.split('/')[-1]+'/'+filename

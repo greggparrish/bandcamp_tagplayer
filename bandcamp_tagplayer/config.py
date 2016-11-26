@@ -13,6 +13,9 @@ conf.read(ConfigPath+'config')
 def format_path(path):
   if '~' in path:
     path = os.path.expanduser(path)
+  else:
+    path = path
+  return path
 
 cache_dir = format_path(conf['storage']['cache'])
 save_file = format_path(conf['storage']['save_file'])

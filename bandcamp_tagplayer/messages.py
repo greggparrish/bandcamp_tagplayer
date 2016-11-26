@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+from blessed import Terminal
 from clint.textui import colored, puts
+from time import sleep
 
 class Messages:
   def creating_db():
@@ -12,6 +14,13 @@ class Messages:
 
   def idle():
     print(colored.green("Idle. Waiting until playlist is < 4."))
+
+  def menu_choice(show):
+    term = Terminal()
+    print(term.clear())
+    print(show)
+    sleep(1)
+    print(term.clear())
 
   def no_tag_results(tag):
     print(colored.red("No results for tag: "), colored.green("{}".format(tag)))

@@ -3,6 +3,7 @@
 from blessed import Terminal
 from time import sleep
 
+import config
 from db import Database
 from messages import Messages
 from mpd import MPDClient
@@ -16,6 +17,7 @@ import utils
 """  
 
 cache_sym = 'cache'
+save_file = config.save_file
 port = 6600
 host = "localhost"
 
@@ -52,7 +54,6 @@ class MPDQueue(object):
     Check playlist every 2 seconds, if under 4 tracks, get more
     """
     term = Terminal()
-    print(term.clear())
     with MPDConn(host,port) as m:
       change = False
       while True:
@@ -61,21 +62,28 @@ class MPDQueue(object):
           with term.cbreak():
             c = term.inkey(1)
             if c == 'c':
+              print(term.clear())
               change = True
               return change
               break
             if c =='q':
-              print(term.clear())
-              print(term.normal)
+              show = 'Quitting'
+              Messages.menu_choice(show)
               exit()
             if c == 'B':
-              pass
+              show = 'Banning artist'
+              Messages.menu_choice(show)
             if c == 'b':
-              pass
+              show = 'Banning song'
+              Messages.menu_choice(show)
             if c == 's':
+              show = "Saving info to {}".format(save_file)
+              Messages.menu_choice(show)
               filename = m.currentsong()['file']
               utils.save_track_info(filename)
             if c == 'w':
+              show = 'Opening Bandcamp page'
+              Messages.menu_choice(show)
               filename = m.currentsong()['file']
               utils.browser(filename)
         if int(songs_left) < 4:
@@ -90,8 +98,11 @@ class MPDQueue(object):
       genre = cs.get('genre', '')
       term = Terminal()
       with term.hidden_cursor():
-        with term.location(0, term.height - 5):
+        with term.location(0, 0):
           print(term.clear_eol+"Search tag: {}".format(tag.title()))
           print(term.clear_eol+"{} in playlist".format(songs_left))
           print(term.clear_eol+"Current song: {} by {} (genre: {})".format(cs['title'],cs['artist'], genre))
           print("[b]an song, [B]an artist, [c]hange tag, [w]ebsite, [s]ave info, [q]uit: ")
+          print(term.clear_eol)
+          print(term.clear_eol)
+
