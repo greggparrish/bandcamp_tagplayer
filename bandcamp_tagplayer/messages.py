@@ -1,35 +1,31 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
 from blessed import Terminal
-from clint.textui import colored, puts
 from time import sleep
 
 class Messages:
-  def creating_db():
-    print(colored.green("Creating database"))
+  def creating_db(self):
+    print("Creating database")
 
-  def current_song(song):
+  def current_song(self, song):
     print("Now playing: {} by {} from {}".format(song.name, song.artist, song.album))
 
-  def idle():
-    print(colored.green("Idle. Waiting until playlist is < 4."))
-
-  def menu_choice(show):
+  def menu_choice(self, show):
     term = Terminal()
     print(term.clear())
     print(show)
     sleep(1)
     print(term.clear())
 
-  def no_tag_results(tag):
-    print(colored.red("No results for tag: "), colored.green("{}".format(tag)))
+  def no_tag_results(self, tag):
+    print("No results for tag: {}".format(tag))
 
-  def now_loading(artist, track):
-    print(colored.red("Now loading: {} by {}".format(track, artist)))
+  def now_loading(self, artist, track):
+    print("Now loading: {} by {}".format(track, artist))
 
-  def results_found(tag):
-    print(colored.green("Downloading metadata for {} albums".format(tag)))
+  def results_found(self, tag):
+    print("Downloading metadata for {} albums".format(tag))
 
-  def related_tags(tags):
-    print(colored.green("Related tags: "),colored.red("{}").format(tags))
+  def related_tags(self, tags):
+    term = Terminal()
+    print(term.bold+"Related tags: {}".format(tags)+term.normal)

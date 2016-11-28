@@ -2,18 +2,9 @@
 
 """
   TODO:
-    - replace clint with blessed formatting
-    - always get random page, switch between pop and new
-    - if mpd playing, get genre, ask if want more
-    - symlink cache dir to mpd music_dir
-    - arg to rebuild db
-    - turn mpd random on/off through ui
-    - clean cache
-    - first album grab get popular (?sort_field=pop)
-    - second or update get new(?sort_field=date)
-    - set number to add to playlist in conf, use in db
-    - rm unused messages
-    - status idle message
+    - build bandcamp_tagplayer & cache_dir in .config
+    - add config example, copy over
+    - when getting songs, make sure artists are different (Bill Mallonee)
 """
 
 import json
@@ -22,9 +13,10 @@ import random
 from random import randint
 import re
 import time
+from time import sleep
 
+from blessed import Terminal
 from bs4 import BeautifulSoup
-from clint.textui import progress
 from mutagen import File
 from mutagen.mp3 import MP3
 from mutagen.id3 import TIT2, COMM, ID3NoHeaderError
@@ -33,14 +25,26 @@ import requests
 from slugify import slugify
 
 import config
-from mpd_queue import MPDQueue
+import db
+from mpd_queue import MPDQueue, MPDConn
 from messages import Messages
-from blessed import Terminal
+from utils import Utils
 
 cache_dir = config.cache_dir
 browser = config.browser
+rel_path = cache_dir.split('/')[-1]
+mpd_host = config.mpd_host
+mpd_port = config.mpd_port
 
 class Tagplayer:
+  def __init__(self):
+    ut = Utils()
+    ut.build_dirs()
+    ut.symlink_musicdir()
+    ut.clear_cache()
+    with MPDConn(mpd_host,mpd_port) as m:
+      m.update(rel_path)
+
   def ask_for_tag(self):
     term = Terminal()
     print(term.clear())
@@ -53,23 +57,27 @@ class Tagplayer:
     while change is True:
       self.ask_for_tag()
     else:
-      print(change)
       self.get_albums(tag)
 
   def get_albums(self, tag):
     """ Get album urls """
-    page = randint(0, 10)
+    page = randint(1, 10)
     sort = random.choice(['pop','new'])
-    r = requests.get('https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(tag, page, sort))
+    try:
+      r = requests.get('https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(tag, page, sort))
+    except requests.exceptions.RequestException as e:
+      print(e)
+      exit()
     if r.status_code != 404:
-      Messages.results_found(tag)
+      Messages().results_found(tag)
       soup = BeautifulSoup(r.text, 'lxml')
       album_list = soup.find_all('li', class_='item')
       tags = soup.find_all('a', class_='related_tag')
       tag_list = ', '.join([t.text for t in tags])
-      Messages.related_tags(tag_list)
+      Messages().related_tags(tag_list)
       if not album_list:
-        Messages.no_tag_results(tag)
+        Messages().no_tag_results(tag)
+        sleep(1)
         self.ask_for_tag()
       else:
         albums = []
@@ -79,11 +87,14 @@ class Tagplayer:
 
   def get_song_meta(self, albums, tag):
     """ Choose random song from album,
-    get metadata (artist, title, album, price, date, dl_url for that song """
+    get metadata (artist, title, album, url, date, dl_url for that song """
     r_albums = random.sample(albums, 4)
     for a in r_albums:
       url = a[0]
-      r = requests.get(url)
+      try:
+        r = requests.get(url)
+      except requests.exceptions.RequestException as e:
+        print(e)
       if r.status_code != 404:
         soup = BeautifulSoup(r.text, 'lxml')
         """ album meta from bs4 & current: """
@@ -109,7 +120,10 @@ class Tagplayer:
             'dl_url': s['file']['mp3-128'],
             'genre': tag,
           }
-          self.download_song(metadata, tag)
+          ar_check = db.Database.check_ban(metadata['artist_id'],0)
+          tr_check = db.Database.check_ban(metadata['track_id'],0)
+          if not ar_check or not tr_check:
+            self.download_song(metadata, tag)
     MPDQueue().watch_playlist(tag)
     self.get_albums(tag)
 
@@ -120,20 +134,20 @@ class Tagplayer:
     filename = '_'.join(fn)+'.mp3'
     path = os.path.join(cache_dir, filename)
     """ If exists, load, if not dl """
-    rel_path = cache_dir.split('/')[-1]+'/'+filename
+    local_path = rel_path+'/'+filename
     if os.path.isfile(path) is True:
-      MPDQueue.add_song(rel_path)
+      MPDQueue.add_song(local_path)
     else:
       r = requests.get(dl_url, stream=dl_url)
-      Messages.now_loading(metadata['artist'], metadata['track'])
+      Messages().now_loading(metadata['artist'], metadata['track'])
       with open(path, 'wb') as t:
         total_length = int(r.headers.get('content-length', 0))
-        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
+        for chunk in r.iter_content():
           if chunk:
             t.write(chunk)
             t.flush()
       self.write_ID3_tags(filename,metadata)
-      MPDQueue.add_song(rel_path)
+      MPDQueue.add_song(local_path)
 
   def write_ID3_tags(self, filename, metadata):
     path = os.path.join(cache_dir, filename)
@@ -148,6 +162,3 @@ class Tagplayer:
     song['date'] = metadata['date']
     song['website'] = metadata['album_url']
     song.save()
-
-t = Tagplayer()
-Tagplayer.ask_for_tag(t)

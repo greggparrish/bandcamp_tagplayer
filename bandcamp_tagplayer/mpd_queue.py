@@ -5,34 +5,31 @@ from time import sleep
 
 import config
 from db import Database
-from messages import Messages
 from mpd import MPDClient
-import utils
+from utils import Utils
 
 """ 
-  Get config values for mpd
   set host and port
   Create symlink in music dir
-  Get random state and reset to user state on tagplayer exit
 """  
 
 cache_sym = 'cache'
 save_file = config.save_file
-port = 6600
-host = "localhost"
+mpd_host = config.mpd_host
+mpd_port = config.mpd_port
 
 class MPDConn(object):
   def __init__(self, host, path):
-    self.host = host
-    self.port = port
+    self.host = mpd_host
+    self.port = mpd_port
     self.client = None
+    d = Database()
 
   def __enter__(self):
     self.client = MPDClient()
-    self.client.connect(host,port)
+    self.client.connect(mpd_host,mpd_port)
     # 0 is random off, 1 is on
-    self.client.random(0)
-    #self.client.play_state = self.client.status()['state']
+    #self.client.random(0)
     return self.client
 
   def __exit__(self, exc_class, exc, traceback):
@@ -41,7 +38,7 @@ class MPDConn(object):
 
 class MPDQueue(object):
   def add_song(song):
-    with MPDConn(host,port) as m:
+    with MPDConn(mpd_host,mpd_port) as m:
       m.update('cache')
       sleep(3)
       song_id = m.add(song)
@@ -54,46 +51,25 @@ class MPDQueue(object):
     Check playlist every 2 seconds, if under 4 tracks, get more
     """
     term = Terminal()
-    with MPDConn(host,port) as m:
+    print(term.clear())
+    with MPDConn(mpd_host,mpd_port) as m:
       change = False
       while True:
         songs_left = m.status()['playlistlength']
-        with term.location(0, term.height - 1):
-          with term.cbreak():
-            c = term.inkey(1)
-            if c == 'c':
-              print(term.clear())
-              change = True
-              return change
-              break
-            if c =='q':
-              show = 'Quitting'
-              Messages.menu_choice(show)
-              exit()
-            if c == 'B':
-              show = 'Banning artist'
-              Messages.menu_choice(show)
-            if c == 'b':
-              show = 'Banning song'
-              Messages.menu_choice(show)
-            if c == 's':
-              show = "Saving info to {}".format(save_file)
-              Messages.menu_choice(show)
-              filename = m.currentsong()['file']
-              utils.save_track_info(filename)
-            if c == 'w':
-              show = 'Opening Bandcamp page'
-              Messages.menu_choice(show)
-              filename = m.currentsong()['file']
-              utils.browser(filename)
-        if int(songs_left) < 4:
+        try:
+          curr_song = m.currentsong()['file']
+        except:
+          break
+        change = Utils().options_menu(curr_song)
+        if int(songs_left) < 4 or change is True:
           break
         else:
           self._write_status(songs_left, tag)
           sleep(2)
+    return change
 
   def _write_status(self, songs_left, tag):
-    with MPDConn(host,port) as m:
+    with MPDConn(mpd_host,mpd_port) as m:
       cs = m.currentsong()
       genre = cs.get('genre', '')
       term = Terminal()

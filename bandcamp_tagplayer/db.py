@@ -29,18 +29,19 @@ class Database:
     self._create_table()
 
   def _create_table(self):
+    """ Ban artist or song from ui, 0 = artist, 1 = track """
     with dbconn(songs_db) as c:
       c.execute('CREATE TABLE IF NOT EXISTS bans (item_id INTEGER UNIQUE, item_type INTEGER)')
 
   def check_ban(item_id, item_type):
     """ Check if album or song has been banned """
     with dbconn(songs_db) as c:
-      ban = c.execute("SELECT item_id FROM bans WHERE item_id = ? AND item_type = ?", (item_id,item_type)).fetchone()[0]
+      ban = c.execute("SELECT item_id FROM bans WHERE item_id = ? AND item_type = ?", (item_id,item_type)).fetchone()
       return ban
 
   def ban_item(item_id, item_type):
     """ Ban an album or song. id from filename, 
         item_type:  0 = album, 1 = song """
     with dbconn(songs_db) as c:
-      ban = c.execute("INSERT OR IGNORE INTO bans(item_id,item_type) WHERE {}_id = ?", (item_id,item_type))
-      return ban
+      banned = c.execute("INSERT OR IGNORE INTO bans (item_id,item_type) VALUES (?,?)", (item_id,item_type))
+      return banned

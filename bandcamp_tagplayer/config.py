@@ -17,15 +17,11 @@ def format_path(path):
     path = path
   return path
 
-cache_dir = format_path(conf['storage']['cache'])
-save_file = format_path(conf['storage']['save_file'])
-music_dir = format_path(conf['mpd']['music_dir'])
 browser = conf['browser']['browser']
+cache_dir = format_path(conf['storage']['cache'])
+mpd_host = conf['mpd']['host']
+mpd_port = conf['mpd']['port']
+music_dir = format_path(conf['mpd']['music_dir'])
+save_file = format_path(conf['storage']['save_file'])
 
-"""
-def build_dirs(path):    
-  if not os.path.exists(path):
-    os.makedirs(path)
-  return path
-"""
 
