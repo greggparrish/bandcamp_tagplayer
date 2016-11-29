@@ -1,0 +1,15 @@
+[storage]
+cache = ~/.config/bandcamp_tagplayer/cache
+save_file = ~/.config/bandcamp_tagplayer/save_file.txt
+
+[player]
+player = mpd
+
+[mpd]
+music_dir = ~/music
+host = localhost
+port = 6600
+
+[browser]
+browser = google-chrome
+

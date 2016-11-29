@@ -25,7 +25,7 @@ CONFIG
 - config file: ~/.config/bandcamp_tagplayer/config 
 - set cache (dir for mp3s), and save_file (txt file to save artist info)
 - set mpd host, port, and music directory 
-- set browser(firefox, google-chrome,w3m)
+- set browser (firefox, google-chrome, w3m) used to open artist page
 
 USAGE
 -----
