@@ -21,7 +21,8 @@ class Utils:
         so symlink it if user didn't choose a path already in
         their mpd music dir """
     try:
-      os.symlink(cf['cache_dir'],cf['music_dir'])
+      rel_path = cf['cache_dir'].split('/')[-1]
+      os.symlink(cf['cache_dir'],os.path.join(cf['music_dir'],rel_path))
     except FileExistsError:
       pass
 
@@ -100,3 +101,4 @@ class Utils:
           Messages().menu_choice(show)
           self.browser(current_song)
     return change
+
