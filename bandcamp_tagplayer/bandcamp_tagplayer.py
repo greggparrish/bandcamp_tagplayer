@@ -4,6 +4,8 @@
 bandcamp_tagplayer
 Creates mpd playlists from Bandcamp genre tags.
 
+Config file at: ~/.config/bandcamp_tagplayer/config
+
 Usage:
   bandcamp_tagplayer.py
   bandcamp_tagplayer.py <tag>

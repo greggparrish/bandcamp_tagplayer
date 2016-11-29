@@ -2,8 +2,6 @@
 
 """
   TODO:
-    - build bandcamp_tagplayer & cache_dir in .config
-    - add config example, copy over
     - when getting songs, make sure artists are different (Bill Mallonee)
 """
 
@@ -24,26 +22,20 @@ from mutagen.easyid3 import EasyID3
 import requests
 from slugify import slugify
 
-import config
+from config import Config
 import db
 from mpd_queue import MPDQueue, MPDConn
 from messages import Messages
 from utils import Utils
 
-cache_dir = config.cache_dir
-browser = config.browser
-rel_path = cache_dir.split('/')[-1]
-mpd_host = config.mpd_host
-mpd_port = config.mpd_port
+c = Config().conf_vars()
 
 class Tagplayer:
   def __init__(self):
     ut = Utils()
-    ut.build_dirs()
     ut.symlink_musicdir()
     ut.clear_cache()
-    with MPDConn(mpd_host,mpd_port) as m:
-      m.update(rel_path)
+    MPDQueue().update_mpd
 
   def ask_for_tag(self):
     term = Terminal()
@@ -132,8 +124,9 @@ class Tagplayer:
     timestamp = int(time.time())
     fn = ['bctcache', str(timestamp), metadata['artist_id'], metadata['track_id']]
     filename = '_'.join(fn)+'.mp3'
-    path = os.path.join(cache_dir, filename)
+    path = os.path.join(c['cache_dir'], filename)
     """ If exists, load, if not dl """
+    rel_path = c['cache_dir'].split('/')[-1]
     local_path = rel_path+'/'+filename
     if os.path.isfile(path) is True:
       MPDQueue.add_song(local_path)
@@ -141,7 +134,6 @@ class Tagplayer:
       r = requests.get(dl_url, stream=dl_url)
       Messages().now_loading(metadata['artist'], metadata['track'])
       with open(path, 'wb') as t:
-        total_length = int(r.headers.get('content-length', 0))
         for chunk in r.iter_content():
           if chunk:
             t.write(chunk)
@@ -150,7 +142,7 @@ class Tagplayer:
       MPDQueue.add_song(local_path)
 
   def write_ID3_tags(self, filename, metadata):
-    path = os.path.join(cache_dir, filename)
+    path = os.path.join(c['cache_dir'], filename)
     try:
       song = EasyID3(path)
     except ID3NoHeaderError:

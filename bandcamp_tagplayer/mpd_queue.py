@@ -3,31 +3,23 @@
 from blessed import Terminal
 from time import sleep
 
-import config
+from config import Config
 from db import Database
 from mpd import MPDClient
 from utils import Utils
 
-""" 
-  set host and port
-  Create symlink in music dir
-"""  
-
-cache_sym = 'cache'
-save_file = config.save_file
-mpd_host = config.mpd_host
-mpd_port = config.mpd_port
+c = Config().conf_vars()
 
 class MPDConn(object):
   def __init__(self, host, path):
-    self.host = mpd_host
-    self.port = mpd_port
+    self.host = c['mpd_host']
+    self.port = c['mpd_port']
     self.client = None
     d = Database()
 
   def __enter__(self):
     self.client = MPDClient()
-    self.client.connect(mpd_host,mpd_port)
+    self.client.connect(c['mpd_host'],c['mpd_port'])
     # 0 is random off, 1 is on
     #self.client.random(0)
     return self.client
@@ -38,7 +30,7 @@ class MPDConn(object):
 
 class MPDQueue(object):
   def add_song(song):
-    with MPDConn(mpd_host,mpd_port) as m:
+    with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       m.update('cache')
       sleep(3)
       song_id = m.add(song)
@@ -52,7 +44,7 @@ class MPDQueue(object):
     """
     term = Terminal()
     print(term.clear())
-    with MPDConn(mpd_host,mpd_port) as m:
+    with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       change = False
       while True:
         songs_left = m.status()['playlistlength']
@@ -68,8 +60,13 @@ class MPDQueue(object):
           sleep(2)
     return change
 
+  def update_mpd(self):
+    rel_path = c['cache_dir'].split('/')[-1]
+    with MPDConn(c['mpd_host'],c['mpd_port']) as m:
+      m.update(rel_path)
+
   def _write_status(self, songs_left, tag):
-    with MPDConn(mpd_host,mpd_port) as m:
+    with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       cs = m.currentsong()
       genre = cs.get('genre', '')
       term = Terminal()
