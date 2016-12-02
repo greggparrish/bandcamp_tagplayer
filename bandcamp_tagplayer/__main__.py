@@ -7,10 +7,10 @@ Creates mpd playlists from Bandcamp genre tags.
 Config file at: ~/.config/bandcamp_tagplayer/config
 
 Usage:
-  bandcamp_tagplayer.py
-  bandcamp_tagplayer.py <tag>
-  bandcamp_tagplayer.py (-h | --help)
-  bandcamp_tagplayer.py (--version)
+  bandcamp_tagplayer
+  bandcamp_tagplayer <tag>
+  bandcamp_tagplayer (-h | --help)
+  bandcamp_tagplayer (--version)
 
 Options:
   -t --tag                  Search tag
@@ -39,3 +39,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

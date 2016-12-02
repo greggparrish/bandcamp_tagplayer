@@ -34,9 +34,6 @@ class MPDQueue(object):
       m.update('cache')
       sleep(3)
       song_id = m.add(song)
-      play_state = m.status()['state']
-      if play_state is not 'play':
-        m.play()
 
   def watch_playlist(self, tag):
     """

@@ -131,7 +131,11 @@ class Tagplayer:
     if os.path.isfile(path) is True:
       MPDQueue.add_song(local_path)
     else:
-      r = requests.get(dl_url, stream=dl_url)
+      try:
+        r = requests.get(dl_url, stream=dl_url)
+      except requests.exceptions.RequestException as e:
+        print(e)
+        quit()
       Messages().now_loading(metadata['artist'], metadata['track'])
       with open(path, 'wb') as t:
         for chunk in r.iter_content():

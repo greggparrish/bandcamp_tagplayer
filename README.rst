@@ -29,8 +29,8 @@ CONFIG
 
 USAGE
 -----
-- bandcamp_tagplayer.py <GENRE>
-- ex. bandcamp_tagplayer.py darkwave
+- bandcamp_tagplayer <GENRE>
+- ex. bandcamp_tagplayer darkwave
 - hyphenate genres with more than one word, ex. new-wave, southern-gothic
 
 
