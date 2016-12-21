@@ -1,10 +1,5 @@
 #!/usr/bin/python3
 
-"""
-  TODO:
-    - when getting songs, make sure artists are different (Bill Mallonee)
-"""
-
 import json
 import os
 import random

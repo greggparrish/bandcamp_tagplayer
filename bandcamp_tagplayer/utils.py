@@ -96,9 +96,14 @@ class Utils:
           Messages().menu_choice(show)
           self.save_track_info(current_song)
         if c == 'w':
-          artist_url = EasyID3(os.path.join(cf['music_dir'],current_song))['website'][0]
-          show = 'Opening Bandcamp page'
-          Messages().menu_choice(show)
-          self.browser(current_song)
+          try:
+            artist_url = EasyID3(os.path.join(cf['music_dir'],current_song))['website'][0]
+            show = 'Opening Bandcamp page'
+            Messages().menu_choice(show)
+            self.browser(current_song)
+          except: 
+            print("No website saved in track meta.")
+            time.sleep(2)
+            print(term.clear())
     return change
 
