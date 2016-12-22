@@ -72,7 +72,6 @@ class Utils:
         if c == 'c':
           print(term.clear())
           change = True
-          print(change)
           return change
           pass
         if c =='q':

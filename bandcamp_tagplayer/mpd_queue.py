@@ -9,6 +9,7 @@ from mpd import MPDClient
 from utils import Utils
 
 c = Config().conf_vars()
+cache = c['cache_dir']
 
 class MPDConn(object):
   def __init__(self, host, path):
@@ -31,7 +32,7 @@ class MPDConn(object):
 class MPDQueue(object):
   def add_song(song):
     with MPDConn(c['mpd_host'],c['mpd_port']) as m:
-      m.update('cache')
+      update_mpd()
       sleep(3)
       song_id = m.add(song)
 
