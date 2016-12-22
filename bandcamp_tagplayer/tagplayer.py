@@ -10,6 +10,7 @@ from time import sleep
 
 from blessed import Terminal
 from bs4 import BeautifulSoup
+from clint.textui import progress
 from mutagen import File
 from mutagen.mp3 import MP3
 from mutagen.id3 import TIT2, COMM, ID3NoHeaderError
@@ -133,12 +134,13 @@ class Tagplayer:
         quit()
       Messages().now_loading(metadata['artist'], metadata['track'])
       with open(path, 'wb') as t:
-        for chunk in r.iter_content():
+        total_length = int(r.headers.get('content-length', 0))
+        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
           if chunk:
             t.write(chunk)
             t.flush()
       self.write_ID3_tags(filename,metadata)
-      MPDQueue.add_song(local_path)
+      MPDQueue().add_song(local_path)
 
   def write_ID3_tags(self, filename, metadata):
     path = os.path.join(c['cache_dir'], filename)
