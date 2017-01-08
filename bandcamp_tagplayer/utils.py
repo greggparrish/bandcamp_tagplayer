@@ -15,6 +15,7 @@ from messages import Messages
 
 cf = Config().conf_vars()
 
+
 class Utils:
   def symlink_musicdir(self):
     """ Cache has to be within mpd music dir to load tracks,
@@ -22,7 +23,7 @@ class Utils:
         their mpd music dir """
     try:
       rel_path = cf['cache_dir'].split('/')[-1]
-      os.symlink(cf['cache_dir'],os.path.join(cf['music_dir'],rel_path))
+      os.symlink(cf['cache_dir'], os.path.join(cf['music_dir'], rel_path))
     except FileExistsError:
       pass
 
@@ -35,7 +36,7 @@ class Utils:
   def save_track_info(self,current_song):
     """ Save artist, trac, genre & url to text file set in config """
     term = Terminal()
-    print(term.normal) 
+    print(term.normal)
     date = '{0:%b %d, %Y %H:%M:%S}'.format(datetime.datetime.now())
     track = EasyID3(os.path.join(cf['music_dir'],current_song))
     artist = "Artist: {}".format(track['artist'][0])
@@ -100,7 +101,7 @@ class Utils:
             show = 'Opening Bandcamp page'
             Messages().menu_choice(show)
             self.browser(current_song)
-          except: 
+          except:
             print("No website saved in track meta.")
             time.sleep(2)
             print(term.clear())

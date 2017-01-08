@@ -12,19 +12,19 @@ from blessed import Terminal
 from bs4 import BeautifulSoup
 from clint.textui import progress
 from mutagen import File
-from mutagen.mp3 import MP3
-from mutagen.id3 import TIT2, COMM, ID3NoHeaderError
+from mutagen.id3 import ID3NoHeaderError
 from mutagen.easyid3 import EasyID3
 import requests
 from slugify import slugify
 
 from config import Config
 import db
-from mpd_queue import MPDQueue, MPDConn
+from mpd_queue import MPDQueue
 from messages import Messages
 from utils import Utils
 
 c = Config().conf_vars()
+
 
 class Tagplayer:
   def __init__(self):
@@ -50,7 +50,7 @@ class Tagplayer:
   def get_albums(self, tag):
     """ Get album urls """
     page = randint(1, 10)
-    sort = random.choice(['pop','new'])
+    sort = random.choice(['pop', 'new'])
     try:
       r = requests.get('https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(tag, page, sort))
     except requests.exceptions.RequestException as e:
@@ -150,6 +150,7 @@ class Tagplayer:
       song = File(path, easy=True)
     song['title'] = metadata['track']
     song['artist'] = metadata['artist']
+    songdd = 22
     song['album'] = metadata['album']
     song['genre'] = metadata['genre'].title().replace('-',' ')
     song['date'] = metadata['date']

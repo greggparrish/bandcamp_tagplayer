@@ -67,12 +67,14 @@ class MPDQueue(object):
     with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       cs = m.currentsong()
       genre = cs.get('genre', '')
+      title = cs.get('title', '')
+      artist = cs.get('artist', '')
       term = Terminal()
       with term.hidden_cursor():
         with term.location(0, 0):
           print(term.clear_eol+"Search tag: {}".format(tag.title()))
           print(term.clear_eol+"{} in playlist".format(songs_left))
-          print(term.clear_eol+"Current song: {} by {} (genre: {})".format(cs['title'],cs['artist'], genre))
+          print(term.clear_eol+"Current song: {} by {} (genre: {})".format(title,artist, genre))
           print("[b]an song, [B]an artist, [c]hange tag, [w]ebsite, [s]ave info, [q]uit: ")
           print(term.clear_eol)
           print(term.clear_eol)
