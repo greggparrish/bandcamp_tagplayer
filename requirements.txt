@@ -1,9 +1,14 @@
+appdirs==1.4.0
+args==0.1.0
 beautifulsoup4==4.5.1
 blessed==1.14.1
+clint==0.5.1
 docopt==0.6.2
 lxml==3.6.4
 mutagen==1.35.1
+packaging==16.8
 ply==3.9
+pyparsing==2.1.10
 python-mpd2==0.5.5
 python-slugify==1.2.1
 requests==2.12.0
