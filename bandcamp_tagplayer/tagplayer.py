@@ -85,33 +85,39 @@ class Tagplayer:
         print(e)
       if r.status_code != 404:
         soup = BeautifulSoup(r.text, 'lxml')
-        """ album meta from bs4 & current: """
-        artist = soup.find('span', itemprop='byArtist')
-        artist = artist.find('a').text
-        bc_meta = re.search('current\: (.*?)},', r.text).group(1)
-        m_json = json.loads(bc_meta+'}')
-        date = re.search('\d{4}', str(m_json['release_date'])).group(0)
-        """ song meta from trackinfo: """
-        songs = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
-        s_json = json.loads("["+songs+"]")
-        s = random.choice(s_json)
+        """ check if song is tagged with anything from banlist """
+        tags = soup.find_all('a', class_='tag')
+        tag_list = []
+        for t in tags:
+          tag_list.append(str(t))
+        if len([x for x in tag_list if x in c['banned_genres']]) == 0:
+          """ album meta from bs4 & current: """
+          artist = soup.find('span', itemprop='byArtist')
+          artist = artist.find('a').text
+          bc_meta = re.search('current\: (.*?)},', r.text).group(1)
+          m_json = json.loads(bc_meta+'}')
+          date = re.search('\d{4}', str(m_json['release_date'])).group(0)
+          """ song meta from trackinfo: """
+          songs = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
+          s_json = json.loads("["+songs+"]")
+          s = random.choice(s_json)
 
-        if s['file'] != None:
-          metadata = {
-            'artist': artist,
-            'artist_id': str(m_json['band_id']),
-            'track': s['title'],
-            'track_id': str(s['track_id']),
-            'album': m_json['title'],
-            'date': date,
-            'album_url': url,
-            'dl_url': s['file']['mp3-128'],
-            'genre': tag,
-          }
-          ar_check = db.Database.check_ban(metadata['artist_id'],0)
-          tr_check = db.Database.check_ban(metadata['track_id'],0)
-          if not ar_check or not tr_check:
-            self.download_song(metadata, tag)
+          if s['file'] != None:
+            metadata = {
+              'artist': artist,
+              'artist_id': str(m_json['band_id']),
+              'track': s['title'],
+              'track_id': str(s['track_id']),
+              'album': m_json['title'],
+              'date': date,
+              'album_url': url,
+              'dl_url': s['file']['mp3-128'],
+              'genre': tag,
+            }
+            ar_check = db.Database.check_ban(metadata['artist_id'],0)
+            tr_check = db.Database.check_ban(metadata['track_id'],0)
+            if not ar_check or not tr_check:
+              self.download_song(metadata, tag)
     MPDQueue().watch_playlist(tag)
     self.get_albums(tag)
 
