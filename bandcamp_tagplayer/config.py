@@ -23,6 +23,7 @@ class Config(object):
       'cache_dir': self.format_path(conf['storage']['cache']),
       'mpd_host': conf['mpd']['host'],
       'mpd_port': conf['mpd']['port'],
+      'banned_genres': conf['songs']['ban_list'],
       'music_dir':  self.format_path(conf['mpd']['music_dir']),
       'save_file': self.format_path(conf['storage']['save_file'])
     }
@@ -43,6 +44,8 @@ class Config(object):
     conf.set("mpd", "port", "6600")
     conf.add_section("browser")
     conf.set("browser", "browser", "google-chrome")
+    conf.add_section("songs")
+    conf.set("songs", "ban_list", "")
     with open(path, "w") as config_file:
         conf.write(config_file)
 
