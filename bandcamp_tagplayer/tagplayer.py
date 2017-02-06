@@ -31,7 +31,9 @@ class Tagplayer:
     ut = Utils()
     ut.symlink_musicdir()
     ut.clear_cache()
-    MPDQueue().update_mpd
+    print(c['cache_dir'].split('/')[-1])
+    MPDQueue().update_mpd()
+    MPDQueue().load_cache()
 
   def ask_for_tag(self):
     term = Terminal()
