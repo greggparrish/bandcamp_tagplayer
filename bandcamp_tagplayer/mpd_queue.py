@@ -63,6 +63,13 @@ class MPDQueue(object):
     with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       m.update(rel_path)
 
+  def load_cache(self):
+    """ After clear_cache, load remaining cached tracks into playlist """
+    with MPDConn(c['mpd_host'],c['mpd_port']) as m:
+      rel_path = c['cache_dir'].split('/')[-1]
+      print(rel_path)
+      m.add(rel_path)
+
   def _write_status(self, songs_left, tag):
     with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       cs = m.currentsong()
