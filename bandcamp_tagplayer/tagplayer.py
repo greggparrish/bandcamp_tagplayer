@@ -31,9 +31,7 @@ class Tagplayer:
     ut = Utils()
     ut.symlink_musicdir()
     ut.clear_cache()
-    print(c['cache_dir'].split('/')[-1])
     MPDQueue().update_mpd()
-    MPDQueue().load_cache()
 
   def ask_for_tag(self):
     term = Terminal()
@@ -44,7 +42,7 @@ class Tagplayer:
 
   def monitor_mpd(self, tag):
     change = MPDQueue().watch_playlist(tag)
-    while change is True:
+    if change == True:
       self.ask_for_tag()
     else:
       self.get_albums(tag)
@@ -120,8 +118,7 @@ class Tagplayer:
             tr_check = db.Database.check_ban(metadata['track_id'],0)
             if not ar_check or not tr_check:
               self.download_song(metadata, tag)
-    MPDQueue().watch_playlist(tag)
-    self.get_albums(tag)
+    self.monitor_mpd(tag)
 
   def download_song(self, metadata, tag):
     dl_url = 'http:'+metadata['dl_url']

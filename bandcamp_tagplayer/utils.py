@@ -63,18 +63,16 @@ class Utils:
         if ts+86400 < now_ts:
           os.remove(os.path.join(cf['cache_dir'],bc_track[0]))
 
-  def options_menu(self,current_song):
+  def options_menu(self,current_song, change_state):
     """ Render options menu and handle commands """
+    change = change_state
     term = Terminal()
-    change = False
     with term.location(0, term.height - 1):
       with term.cbreak():
         c = term.inkey(1)
         if c == 'c':
           print(term.clear())
           change = True
-          return change
-          pass
         if c =='q':
           print(term.clear())
           print(term.normal)
