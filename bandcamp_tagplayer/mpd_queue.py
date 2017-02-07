@@ -50,8 +50,10 @@ class MPDQueue(object):
           curr_song = m.currentsong()['file']
         except:
           break
-        change = Utils().options_menu(curr_song)
+        change = Utils().options_menu(curr_song, change)
+
         if int(songs_left) < 4 or change is True:
+          return change
           break
         else:
           self._write_status(songs_left, tag)
@@ -62,13 +64,6 @@ class MPDQueue(object):
     rel_path = c['cache_dir'].split('/')[-1]
     with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       m.update(rel_path)
-
-  def load_cache(self):
-    """ After clear_cache, load remaining cached tracks into playlist """
-    with MPDConn(c['mpd_host'],c['mpd_port']) as m:
-      rel_path = c['cache_dir'].split('/')[-1]
-      print(rel_path)
-      m.add(rel_path)
 
   def _write_status(self, songs_left, tag):
     with MPDConn(c['mpd_host'],c['mpd_port']) as m:
