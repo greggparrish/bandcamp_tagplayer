@@ -34,7 +34,7 @@ class Config(object):
     print("No config file found at ~/.config/bandcamp_tagplayer, using default settings. Creating file with defaults.")
     path = self.format_path(os.path.join(ConfigPath,'config'))
     conf.add_section("storage")
-    conf.set("storage", "cache", "~/.config/bandcamp_tagplayer/cache")
+    conf.set("storage", "cache", "~/.config/bandcamp_tagplayer/bct_cache")
     conf.set("storage", "save_file", "~/.config/bandcamp_tagplayer/save_file.txt")
     conf.add_section("player")
     conf.set("player", "player", "mpd")

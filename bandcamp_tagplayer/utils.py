@@ -48,7 +48,7 @@ class Utils:
     return saved
 
   def ban(self,item_id,item_type):
-    """ Ban either a track or artisti, won't dl in future """
+    """ Ban either a track or artist, won't dl in future """
     banned = db.Database.ban_item(item_id,item_type)
     return banned
 
