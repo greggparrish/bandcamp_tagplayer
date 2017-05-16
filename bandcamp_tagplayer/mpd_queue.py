@@ -33,7 +33,7 @@ class MPDQueue(object):
   def add_song(self, song):
     with MPDConn(c['mpd_host'],c['mpd_port']) as m:
       self.update_mpd()
-      sleep(3)
+      sleep(10)
       song_id = m.add(song)
 
   def watch_playlist(self, tag):
