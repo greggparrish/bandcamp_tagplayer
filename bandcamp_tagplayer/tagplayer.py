@@ -155,7 +155,6 @@ class Tagplayer:
       song = File(path, easy=True)
     song['title'] = metadata['track']
     song['artist'] = metadata['artist']
-    songdd = 22
     song['album'] = metadata['album']
     song['genre'] = metadata['genre'].title().replace('-',' ')
     song['date'] = metadata['date']
