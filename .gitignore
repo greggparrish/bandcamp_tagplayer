@@ -20,3 +20,5 @@ files/
 *.swp
 
 bandcamp_tagplayer/scraps
+bandcamp_tagplayer/debug.py
+

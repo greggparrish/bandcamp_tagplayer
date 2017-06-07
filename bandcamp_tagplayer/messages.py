@@ -17,6 +17,10 @@ class Messages:
     sleep(1)
     print(term.clear())
 
+
+  def few_tag_results(self, tag):
+    print("Only 1 page of results for tag: {}.  Maybe try a related genre.".format(tag))
+
   def no_tag_results(self, tag):
     print("No results for tag: {}".format(tag))
 

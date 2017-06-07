@@ -25,6 +25,7 @@ Gregory Parrish
 
 import os
 from docopt import docopt
+from slugify import slugify
 
 from tagplayer import Tagplayer
 
@@ -33,7 +34,8 @@ def main():
   arguments = docopt(__doc__, version='bandcamp_tagplayer 1.0')
   bct = Tagplayer()
   if arguments['<tag>']:
-    bct.monitor_mpd(arguments['<tag>'])
+    tag = slugify(arguments['<tag>'])
+    bct.check_tag(tag)
   else:
     bct.ask_for_tag()
 
