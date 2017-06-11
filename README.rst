@@ -4,7 +4,6 @@ Bandcamp_tagplayer pulls songs from Bandcamp based on tag and adds them to the c
 
 The file cache is cleaned on startup, removing files older than 24 hours.  
 
-
 **Please support the artists.**
 
 
@@ -31,7 +30,3 @@ USAGE
 -----
 - bandcamp_tagplayer <GENRE>
 - ex. bandcamp_tagplayer darkwave
-- hyphenate genres with more than one word, ex. new-wave, southern-gothic
-
-
-

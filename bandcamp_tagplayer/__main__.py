@@ -32,12 +32,11 @@ from tagplayer import Tagplayer
 
 def main():
   arguments = docopt(__doc__, version='bandcamp_tagplayer 1.0')
-  bct = Tagplayer()
   if arguments['<tag>']:
     tag = slugify(arguments['<tag>'])
-    bct.check_tag(tag)
+    Tagplayer(tag)
   else:
-    bct.ask_for_tag()
+    Tagplayer(False)
 
 if __name__ == '__main__':
     main()
