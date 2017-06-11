@@ -3,10 +3,8 @@
 import json
 import os
 import random
-from random import randint
 import re
-import time
-from time import sleep
+from time import sleep, time
 
 from blessed import Terminal
 from bs4 import BeautifulSoup
@@ -26,75 +24,91 @@ from utils import Utils
 c = Config().conf_vars()
 
 
-class Tagplayer:
-  def __init__(self):
+class Tagplayer(object):
+
+  def __init__(self, tag):
     ut = Utils()
     ut.symlink_musicdir()
     ut.clear_cache()
     MPDQueue().update_mpd()
 
+    self.tag = tag
+    self.metadata = {}
+    self.numpages = False
+
+    if tag == False:
+      self.ask_for_tag()
+    else:
+      self.check_tag()
+
   def ask_for_tag(self):
-    """ If started without tag or user changed tag through menu, get and slugify tag """
+    '''
+      If started without tag or user changed tag through menu, get and slugify tag
+    '''
     while True:
       term = Terminal()
       print(term.clear())
       tag = input("Enter a tag: ")
       if tag:
-        tag = slugify(tag)
+        self.tag = slugify(tag)
         break
       else:
         continue
-    self.check_tag(tag)
+    self.check_tag()
 
-
-  def check_tag(self, tag):
-    """ Verify that a tag has albums, and get the number of pages of the results. 
-        More obscure genres might only have a few albums, so we need the number of 
-        pages to randomize within page limits. """
-    r = requests.get('https://bandcamp.com/tag/{}'.format(tag))
+  def check_tag(self):
+    '''
+      Verify that a tag has albums, and get the number of pages of the results.
+      More obscure genres might only have a few albums, so we need the number of
+      pages to randomize within page limits.
+    '''
+    r = requests.get('https://bandcamp.com/tag/{}'.format(self.tag))
     soup = BeautifulSoup(r.text, 'lxml')
-    pages = soup.find_all('a', class_='pagenum')
     album_list = soup.find_all('li', class_='item')
-    if not pages and not album_list:
-      numpages = 0
-    elif not pages and album_list != '':
-      numpages = 1
-    else:
-      numpages = pages[-1].contents[0]
+    if self.numpages == False:
+      pages = soup.find_all('a', class_='pagenum')
+      if not pages and album_list != '':
+        self.numpages = 1
+      else:
+        self.numpages = pages[-1].contents[0]
     if not album_list:
-      Messages().no_tag_results(tag)
+      Messages().no_tag_results(self.tag)
       sleep(1)
       self.ask_for_tag()
-    if numpages:
-      self.monitor_mpd(tag, numpages)
+    if self.numpages != False:
+      self.monitor_mpd()
 
-  def monitor_mpd(self, tag, numpages):
-    """ Keep watch of the  number of songs in current playlist, 
-        if below 4, start downloading.  
-        Change means user has asked to change tag. """ 
-    change = MPDQueue().watch_playlist(tag)
+  def monitor_mpd(self):
+    '''
+      Keep watch of the  number of songs in current playlist,
+      if below 4, start downloading.
+      Change means user has asked to change tag.
+    '''
+    change = MPDQueue().watch_playlist(self.tag)
     if change == True:
       self.ask_for_tag()
     else:
-      self.get_albums(tag, numpages)
+      self.get_albums()
 
-  def get_albums(self, tag, numpages):
-    """ Get urls of random albums.  
-        We're aiming for 4 albums from a random page, 
-        but will use existing number if there are fewer."""
+  def get_albums(self):
+    '''
+      Get urls of random albums.
+      We're aiming for 4 albums from a random page,
+      but will use existing number if there are fewer.
+    '''
     sort = random.choice(['pop', 'new'])
-    if numpages != 1:
-      page = randint(1, int(numpages))
+    if self.numpages != 1:
+      page = random.randint(1, int(self.numpages))
     else:
       page = 1
-      Messages().few_tag_results(tag)
+      Messages().few_tag_results(self.tag)
     try:
-      r = requests.get('https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(tag, page, sort))
+      r = requests.get('https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(self.tag, page, sort))
     except requests.exceptions.RequestException as e:
       print(e)
       exit()
     if r.status_code != 404:
-      Messages().results_found(tag)
+      Messages().results_found(self.tag)
       soup = BeautifulSoup(r.text, 'lxml')
       album_list = soup.find_all('li', class_='item')
       tags = soup.find_all('a', class_='related_tag')
@@ -103,11 +117,13 @@ class Tagplayer:
       albums = []
       for a in album_list:
         albums.append([a.find('a')['href']])
-    self.get_song_meta(albums, tag, numpages)
+    self.get_song_meta(albums)
 
-  def get_song_meta(self, albums, tag, numpages):
-    """ Choose random song from the passed album,
-    get metadata (artist, title, album, url, date, dl_url for that song """
+  def get_song_meta(self, albums):
+    '''
+      Choose random song from the passed album
+      get metadata (artist, title, album, url, date, dl_url) for that song
+    '''
     numalbums = len(albums)
     if numalbums > 4:
       r_albums = random.sample(albums, 4)
@@ -148,17 +164,17 @@ class Tagplayer:
               'date': date,
               'album_url': url,
               'dl_url': s['file']['mp3-128'],
-              'genre': tag,
+              'genre': self.tag,
             }
             ar_check = db.Database.check_ban(metadata['artist_id'],0)
             tr_check = db.Database.check_ban(metadata['track_id'],0)
             if not ar_check or not tr_check:
-              self.download_song(metadata, tag)
-    self.monitor_mpd(tag, numpages)
+              self.download_song(metadata)
+    self.monitor_mpd()
 
-  def download_song(self, metadata, tag):
+  def download_song(self, metadata):
     dl_url = 'http:'+metadata['dl_url']
-    timestamp = int(time.time())
+    timestamp = int(time())
     fn = ['bctcache', str(timestamp), metadata['artist_id'], metadata['track_id']]
     filename = '_'.join(fn)+'.mp3'
     path = os.path.join(c['cache_dir'], filename)
