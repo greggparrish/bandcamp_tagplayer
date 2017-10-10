@@ -30,3 +30,6 @@ USAGE
 -----
 - bandcamp_tagplayer <GENRE>
 - ex. bandcamp_tagplayer darkwave
+- if genre contains spaces, hyphenate it or use quotation marks.
+- ex. bandcamp_tagplayer new-wave
+- ex. bandcamp_tagplayer 'new wave'

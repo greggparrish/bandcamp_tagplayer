@@ -30,14 +30,14 @@ from slugify import slugify
 from tagplayer import Tagplayer
 
 
-def main():
-  arguments = docopt(__doc__, version='bandcamp_tagplayer 1.0')
-  if arguments['<tag>']:
-    tag = slugify(arguments['<tag>'])
-    Tagplayer(tag)
-  else:
-    Tagplayer(False)
-
 if __name__ == '__main__':
-    main()
-
+    arguments = docopt(__doc__, version='bandcamp_tagplayer 1.0')
+    if arguments['<tag>']:
+        tag = slugify(arguments['<tag>'])
+    else:
+        tag = False
+    try:
+        with Tagplayer(tag) as tp:
+            tp.check_tag()
+    except Exception as e:
+        print('ERROR: {}'.format(e))
