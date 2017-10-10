@@ -229,7 +229,7 @@ class Tagplayer:
         song.save()
 
 if __name__ == '__main__':
-    tag = 'post-punk'
+    tag = False
     try:
         with Tagplayer(tag) as tp:
             tp.check_tag(tag)
