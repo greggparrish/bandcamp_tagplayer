@@ -53,18 +53,7 @@ class Utils:
         genre = "Genre: {}".format(track['genre'][0])
         website = track['website'][0]
         with open(cf['save_file'], 'a') as out:
-            saved = out.write(
-                '\n' +
-                date +
-                '\n' +
-                artist +
-                '\n' +
-                song +
-                '\n' +
-                genre +
-                '\n' +
-                website +
-                '\n')
+            saved = out.write( '\n' + date + '\n' + artist + '\n' + song + '\n' + genre + '\n' + website + '\n')
         return saved
 
     def ban(self, item_id, item_type):
