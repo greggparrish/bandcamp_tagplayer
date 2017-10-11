@@ -41,7 +41,7 @@ class Tagplayer:
         return self
 
     def __exit__(self, exc_class, exc, traceback):
-        return True
+        sys.exit()
 
     def ask_for_tag(self):
         '''
@@ -67,7 +67,10 @@ class Tagplayer:
         if self.tag == False:
             self.ask_for_tag()
         else:
-            r = requests.get('https://bandcamp.com/tag/{}'.format(self.tag))
+            try:
+                r = requests.get('https://bandcamp.com/tag/{}'.format(self.tag))
+            except Exception as e:
+                print(e)
             soup = BeautifulSoup(r.text, 'lxml')
             album_list = soup.find_all('li', class_='item')
             if self.numpages == False:
@@ -232,6 +235,6 @@ if __name__ == '__main__':
     tag = False
     try:
         with Tagplayer(tag) as tp:
-            tp.check_tag(tag)
+            tp.ask_for_tag()
     except Exception as e:
         print('ERROR: {}'.format(e))
