@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import os
 import sys
 from setuptools import setup, find_packages
@@ -7,14 +5,14 @@ from setuptools import setup, find_packages
 if sys.version_info < (3,0):
   sys.exit("Bandcamp_tagplayer requires python 3.")
 
-version = '0.0.1'
+VERSION = '1.0'
 
 with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as f:
   required = f.read().splitlines()
 
 setup(
     name='bandcamp_tagplayer',
-    version=version,
+    version=VERSION,
     description='Bandcamp_tagplayer creates an mpd playlist from Bandcamp songs by tag.',
     long_description=open('README.rst').read(),
     author='Gregory Parrish',

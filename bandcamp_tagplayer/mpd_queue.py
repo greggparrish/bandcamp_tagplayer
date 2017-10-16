@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from blessed import Terminal
 from time import sleep
 
@@ -8,10 +6,9 @@ from mpd import MPDClient
 from utils import Utils
 
 c = Config().conf_vars()
-cache = c['cache_dir']
 
 
-class MPDConn(object):
+class MPDConn:
     def __init__(self, host, path):
         self.host = c['mpd_host']
         self.port = c['mpd_port']
