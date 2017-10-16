@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 from blessed import Terminal
 from time import sleep
 

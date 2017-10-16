@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 """
 bandcamp_tagplayer
 Creates mpd playlists from Bandcamp genre tags.

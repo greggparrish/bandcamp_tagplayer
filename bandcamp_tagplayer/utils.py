@@ -1,5 +1,3 @@
-#!/usr/bin/python3
-
 import datetime
 import os
 import re
@@ -13,7 +11,7 @@ from config import Config
 import db
 from messages import Messages
 
-cf = Config().conf_vars()
+c = Config().conf_vars()
 
 
 class Utils:
@@ -24,11 +22,11 @@ class Utils:
             their mpd music dir
         '''
         try:
-            rel_path = cf['cache_dir'].split('/')[-1]
+            rel_path = c['cache_dir'].split('/')[-1]
             os.symlink(
-                cf['cache_dir'],
+                c['cache_dir'],
                 os.path.join(
-                    cf['music_dir'],
+                    c['music_dir'],
                     rel_path))
         except FileExistsError:
             pass
@@ -37,9 +35,9 @@ class Utils:
         ''' Open browser with Bandcamp artist url '''
         artist_url = EasyID3(
             os.path.join(
-                cf['music_dir'],
+                c['music_dir'],
                 filename))['website'][0]
-        wb = webbrowser.get(cf['browser']).open(artist_url)
+        wb = webbrowser.get(c['browser']).open(artist_url)
         return wb
 
     def save_track_info(self, current_song):
@@ -47,12 +45,12 @@ class Utils:
         term = Terminal()
         print(term.normal)
         date = '{0:%b %d, %Y %H:%M:%S}'.format(datetime.datetime.now())
-        track = EasyID3(os.path.join(cf['music_dir'], current_song))
+        track = EasyID3(os.path.join(c['music_dir'], current_song))
         artist = "Artist: {}".format(track['artist'][0])
         song = "Track: {}".format(track['title'][0])
         genre = "Genre: {}".format(track['genre'][0])
         website = track['website'][0]
-        with open(cf['save_file'], 'a') as out:
+        with open(c['save_file'], 'a') as out:
             saved = out.write( '\n' + date + '\n' + artist + '\n' + song + '\n' + genre + '\n' + website + '\n')
         return saved
 
@@ -66,16 +64,16 @@ class Utils:
         now_ts = int(time.time())
         files = [
             f for f in os.listdir(
-                cf['cache_dir']) if os.path.isfile(
+                c['cache_dir']) if os.path.isfile(
                 os.path.join(
-                    cf['cache_dir'],
+                    c['cache_dir'],
                     f))]
         for f in files:
             bc_track = re.findall('bctcache_\d*_\d*_\d*.mp3', f)
             if bc_track:
                 ts = int(bc_track[0].split('_')[1])
                 if ts + 86400 < now_ts:
-                    os.remove(os.path.join(cf['cache_dir'], bc_track[0]))
+                    os.remove(os.path.join(c['cache_dir'], bc_track[0]))
 
     def options_menu(self, current_song, change_state):
         ''' Render options menu and handle commands '''
@@ -103,15 +101,15 @@ class Utils:
                     show = 'Banning song'
                     Messages().menu_choice(show)
                 if c == 's':
-                    sf = cf['save_file']
-                    show = "Saving info to {}".format(cf['save_file'])
+                    sf = c['save_file']
+                    show = "Saving info to {}".format(c['save_file'])
                     Messages().menu_choice(show)
                     self.save_track_info(current_song)
                 if c == 'w':
                     try:
                         artist_url = EasyID3(
                             os.path.join(
-                                cf['music_dir'],
+                                c['music_dir'],
                                 current_song))['website'][0]
                         show = 'Opening Bandcamp page'
                         Messages().menu_choice(show)
