@@ -91,12 +91,12 @@ class Utils:
                     self.clear_cache()
                     exit()
                 if c == 'B':
-                    ar_id = current_song.split('_')[2]
+                    ar_id = current_song.split('_')[3]
                     self.ban(ar_id, 0)
                     show = 'Banning artist'
                     Messages().menu_choice(show)
                 if c == 'b':
-                    tr_id = current_song.split('_')[3].replace('.mp3', '')
+                    tr_id = current_song.split('_')[4].replace('.mp3', '')
                     self.ban(tr_id, 1)
                     show = 'Banning song'
                     Messages().menu_choice(show)
