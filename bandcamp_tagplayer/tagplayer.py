@@ -39,6 +39,8 @@ class Tagplayer:
         return self
 
     def __exit__(self, exc_class, exc, traceback):
+        if exc:
+            print("\nERROR: {}".format(exc))
         sys.exit()
 
     def ask_for_tag(self):
@@ -50,8 +52,12 @@ class Tagplayer:
             print(term.clear())
             tag = input("Enter a tag: ")
             if tag:
-                self.tag = slugify(tag)
-                break
+                if tag in c['banned_genres']:
+                    print("\nTag {} is banned in your config file.\nEither remove it from your ban_list or choose another tag.".format(tag))
+                    sleep(2)
+                else:
+                    self.tag = slugify(tag)
+                    break
             else:
                 continue
         self.check_tag()
@@ -148,8 +154,8 @@ class Tagplayer:
                 tags = soup.find_all('a', class_='tag')
                 tag_list = []
                 for t in tags:
-                    tag_list.append(str(t))
-                if len([x for x in tag_list if x in c['banned_genres']]) == 0:
+                    tag_list.append(str(t.text))
+                if set(tag_list).isdisjoint(c['banned_genres'].split(',')):
                     """ album meta from bs4 & current: """
                     artist = soup.find('span', itemprop='byArtist')
                     artist = artist.find('a').text
