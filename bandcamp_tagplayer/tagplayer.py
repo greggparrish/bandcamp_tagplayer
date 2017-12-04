@@ -21,6 +21,7 @@ from messages import Messages
 from utils import Utils
 
 c = Config().conf_vars()
+BANNED_GENRES = [g.lower().strip() for g in c['banned_genres'].split(',')]
 
 
 class Tagplayer:
@@ -35,13 +36,15 @@ class Tagplayer:
         ut = Utils()
         ut.symlink_musicdir()
         ut.clear_cache()
+        db.Database()
         MPDQueue().update_mpd()
         return self
 
     def __exit__(self, exc_class, exc, traceback):
         if exc:
-            print("\nERROR: {}".format(exc))
-        sys.exit()
+            return False
+        else:
+            return True
 
     def ask_for_tag(self):
         '''
@@ -52,12 +55,8 @@ class Tagplayer:
             print(term.clear())
             tag = input("Enter a tag: ")
             if tag:
-                if tag in c['banned_genres']:
-                    print("\nTag {} is banned in your config file.\nEither remove it from your ban_list or choose another tag.".format(tag))
-                    sleep(2)
-                else:
-                    self.tag = slugify(tag)
-                    break
+                self.tag = slugify(tag)
+                break
             else:
                 continue
         self.check_tag()
@@ -70,9 +69,16 @@ class Tagplayer:
         '''
         if self.tag == False:
             self.ask_for_tag()
+        elif self.tag.lower() in BANNED_GENRES:
+            print(
+                "\nTag {} is banned in your config file.\nEither remove it from your ban_list or choose another tag.".format(
+                    self.tag))
+            sleep(2)
+            self.ask_for_tag()
         else:
             try:
-                r = requests.get('https://bandcamp.com/tag/{}'.format(self.tag))
+                r = requests.get(
+                    'https://bandcamp.com/tag/{}'.format(self.tag))
             except Exception as e:
                 print(e)
             soup = BeautifulSoup(r.text, 'lxml')
@@ -155,7 +161,8 @@ class Tagplayer:
                 tag_list = []
                 for t in tags:
                     tag_list.append(str(t.text))
-                if set(tag_list).isdisjoint(c['banned_genres'].split(',')):
+                """ Check track to make sure not tagged with banned genre """
+                if set(tag_list).isdisjoint(BANNED_GENRES):
                     """ album meta from bs4 & current: """
                     artist = soup.find('span', itemprop='byArtist')
                     artist = artist.find('a').text
@@ -181,11 +188,8 @@ class Tagplayer:
                             'dl_url': s['file']['mp3-128'],
                             'genre': self.tag,
                         }
-                        ar_check = db.Database.check_ban(
-                            metadata['artist_id'], 0)
-                        tr_check = db.Database.check_ban(
-                            metadata['track_id'], 0)
-                        if not ar_check or not tr_check:
+                        ban_check = db.Database.check_ban( metadata['artist_id'], metadata['track_id'] )
+                        if not ban_check:
                             self.download_song(metadata)
         self.monitor_mpd()
 
@@ -234,6 +238,7 @@ class Tagplayer:
         song['date'] = metadata['date']
         song['website'] = metadata['album_url']
         song.save()
+
 
 if __name__ == '__main__':
     tag = False
