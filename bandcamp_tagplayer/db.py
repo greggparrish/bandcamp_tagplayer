@@ -34,13 +34,12 @@ class Database:
             c.execute(
                 'CREATE TABLE IF NOT EXISTS bans (item_id INTEGER UNIQUE, item_type INTEGER)')
 
-    def check_ban(item_id, item_type):
+    def check_ban(artist_id, track_id):
         """ Check if album or song has been banned """
         with dbconn(SONGS_DB) as c:
             ban = c.execute(
-                "SELECT item_id FROM bans WHERE item_id = ? AND item_type = ?",
-                (item_id,
-                 item_type)).fetchone()
+                "SELECT item_id FROM bans WHERE item_id = ? AND item_type = 0 OR item_id = ? and item_type = 1",
+                (artist_id, track_id)).fetchone()
         return ban
 
     def ban_item(item_id, item_type):
