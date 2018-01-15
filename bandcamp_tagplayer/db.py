@@ -44,10 +44,9 @@ class Database:
 
     def ban_item(item_id, item_type):
         """ Ban an album or song. id from filename,
-            item_type:  0 = album, 1 = song """
+            item_type:  0 = artist, 1 = song """
         with dbconn(SONGS_DB) as c:
             banned = c.execute(
                 "INSERT OR IGNORE INTO bans (item_id,item_type) VALUES (?,?)",
-                (item_id,
-                 item_type))
+                (item_id, item_type))
         return banned

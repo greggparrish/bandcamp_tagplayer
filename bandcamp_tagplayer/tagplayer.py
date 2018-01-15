@@ -70,15 +70,12 @@ class Tagplayer:
         if self.tag == False:
             self.ask_for_tag()
         elif self.tag.lower() in BANNED_GENRES:
-            print(
-                "\nTag {} is banned in your config file.\nEither remove it from your ban_list or choose another tag.".format(
-                    self.tag))
+            print(f'\nTag {self.tag} is banned in your config file.\nEither remove it from your ban_list or choose another tag.')
             sleep(2)
             self.ask_for_tag()
         else:
             try:
-                r = requests.get(
-                    'https://bandcamp.com/tag/{}'.format(self.tag))
+                r = requests.get(f'https://bandcamp.com/tag/{self.tag}')
             except Exception as e:
                 print(e)
             soup = BeautifulSoup(r.text, 'lxml')
@@ -121,8 +118,7 @@ class Tagplayer:
             page = 1
             Messages().few_tag_results(self.tag)
         try:
-            r = requests.get(
-                'https://bandcamp.com/tag/{}?page={}?sort_field={}'.format(self.tag, page, sort))
+            r = requests.get(f'https://bandcamp.com/tag/{self.tag}?page={page}?sort_field={sort}')
         except requests.exceptions.RequestException as e:
             print(e)
             exit()
@@ -156,12 +152,12 @@ class Tagplayer:
                 print(e)
             if r.status_code != 404:
                 soup = BeautifulSoup(r.text, 'lxml')
-                """ check if song is tagged with anything from banlist """
+                # check if song is tagged with anything from banlist
                 tags = soup.find_all('a', class_='tag')
                 tag_list = []
                 for t in tags:
-                    tag_list.append(str(t.text))
-                """ Check track to make sure not tagged with banned genre """
+                    tag_list.append(str(t.text.split('/')))
+                # check track to make sure not tagged with banned genre
                 if set(tag_list).isdisjoint(BANNED_GENRES):
                     """ album meta from bs4 & current: """
                     artist = soup.find('span', itemprop='byArtist')
@@ -246,4 +242,4 @@ if __name__ == '__main__':
         with Tagplayer(tag) as tp:
             tp.ask_for_tag()
     except Exception as e:
-        print('ERROR: {}'.format(e))
+        print(f'ERROR: {e}')

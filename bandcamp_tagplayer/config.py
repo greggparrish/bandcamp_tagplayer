@@ -1,6 +1,8 @@
 import os
 import configparser
 
+
+
 CONFIGPATH = os.path.join(
     os.path.expanduser('~'),
     '.config/bandcamp_tagplayer/')

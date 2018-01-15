@@ -1,41 +1,35 @@
 """
 bandcamp_tagplayer
-Creates mpd playlists from Bandcamp genre tags.
-
 Config file at: ~/.config/bandcamp_tagplayer/config
 
-Usage:
-  bandcamp_tagplayer
-  bandcamp_tagplayer <tag>
-  bandcamp_tagplayer (-h | --help)
-  bandcamp_tagplayer (--version)
-
 Options:
-  -t --tag                  Search tag
   -h --help                 Show this screen.
   -v --version              Show version.
 """
 
 """ Code:
 Gregory Parrish
-    http://github.com/greggparrish
+    https://github.com/greggparrish/bandcamp_tagplayer
 """
 
 import os
-from docopt import docopt
+import argparse
 from slugify import slugify
 
 from tagplayer import Tagplayer
 
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='bandcamp_tagplayer 1.0')
-    if arguments['<tag>']:
-        tag = slugify(arguments['<tag>'])
-    else:
-        tag = False
+    p=argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
+    p.add_argument('tag', help='Music genre', nargs='?', default=False)
+    p.add_argument('-v', '--version', action='version', version='bandcamp_tagplayer v. 1.10')
+    args=p.parse_args()
+
+    tag = False
+    if args.tag:
+        tag = slugify(args.tag)
     try:
         with Tagplayer(tag) as tp:
             tp.check_tag()
     except Exception as e:
-        print('ERROR: {}'.format(e))
+        print(f'ERROR: {e}')
