@@ -77,18 +77,10 @@ class MPDQueue(object):
             term = Terminal()
             with term.hidden_cursor():
                 with term.location(0, 0):
-                    print(
-                        term.clear_eol +
-                        "Search tag: {}".format(
-                            tag.title()))
-                    print(term.clear_eol + "{} in playlist".format(songs_left))
+                    print( term.clear_eol + f"Search tag: {tag.title()}")
+                    print(term.clear_eol + f"{songs_left} in playlist")
                     if cs != {}:
-                        print(
-                            term.clear_eol +
-                            "Current song: {} by {} (genre: {})".format(
-                                title,
-                                artist,
-                                genre))
+                        print( term.clear_eol + f"Current song: {title} by {artist} (genre: {genre})")
                     print(
                         "[b]an song, [B]an artist, [c]hange tag, [w]ebsite, [s]ave info, [q]uit: ")
                     print(term.clear_eol)
