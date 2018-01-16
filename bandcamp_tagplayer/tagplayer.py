@@ -12,7 +12,6 @@ from mutagen import File
 from mutagen.id3 import ID3NoHeaderError
 from mutagen.easyid3 import EasyID3
 import requests
-from slugify import slugify
 
 from config import Config
 import db
@@ -55,7 +54,7 @@ class Tagplayer:
             print(term.clear())
             tag = input("Enter a tag: ")
             if tag:
-                self.tag = slugify(tag)
+                self.tag = re.sub(' ', '-', tag)
                 break
             else:
                 continue

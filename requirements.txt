@@ -9,11 +9,8 @@ lxml==4.1.1
 mutagen==1.39
 ply==3.10
 python-mpd2==0.5.5
-python-slugify==1.2.4
 requests==2.18.4
 six==1.11.0
-slugify==0.0.1
 Unidecode==1.0.22
 urllib3==1.22
 wcwidth==0.1.7
-youtube-dl==2018.1.14

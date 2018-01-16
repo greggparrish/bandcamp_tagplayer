@@ -14,7 +14,6 @@ Gregory Parrish
 
 import os
 import argparse
-from slugify import slugify
 
 from tagplayer import Tagplayer
 
@@ -27,7 +26,7 @@ if __name__ == '__main__':
 
     tag = False
     if args.tag:
-        tag = slugify(args.tag)
+        tag = args.tag
     try:
         with Tagplayer(tag) as tp:
             tp.check_tag()
