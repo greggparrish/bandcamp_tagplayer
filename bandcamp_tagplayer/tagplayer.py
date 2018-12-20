@@ -130,7 +130,8 @@ class Tagplayer:
             Messages().related_tags(tag_list)
             albums = []
             for a in album_list:
-                albums.append([a.find('a')['href']])
+                if a:
+                    albums.append([a.find('a')['href']])
         self.get_song_meta(albums)
 
     def get_song_meta(self, albums):
