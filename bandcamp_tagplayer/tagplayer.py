@@ -80,7 +80,6 @@ class Tagplayer:
             album_list = soup.find_all('li', class_='item')
             if self.numpages is False:
                 pages = soup.find_all('a', class_='pagenum')
-                print(pages)
                 if not pages and album_list != '':
                     self.numpages = 1
                 else:

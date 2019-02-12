@@ -31,7 +31,14 @@ class MPDQueue(object):
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
             self.update_mpd()
             sleep(5)
-            m.add(song)
+            try:
+                m.add(song)
+            except:
+                try:
+                    sleep(2)
+                    m.add(song)
+                except:
+                    pass
 
     def watch_playlist(self, tag):
         '''

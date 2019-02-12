@@ -19,7 +19,6 @@ if __name__ == '__main__':
     p.add_argument('tag', help='Music genre', nargs='?', default=False)
     p.add_argument('-v', '--version', action='version', version='bandcamp_tagplayer v. 1.20')
     args = p.parse_args()
-
     tag = False
     if args.tag:
         tag = args.tag
