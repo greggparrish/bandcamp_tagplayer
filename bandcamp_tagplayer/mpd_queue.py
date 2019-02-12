@@ -31,7 +31,7 @@ class MPDQueue(object):
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
             self.update_mpd()
             sleep(5)
-            song_id = m.add(song)
+            m.add(song)
 
     def watch_playlist(self, tag):
         '''
@@ -77,10 +77,10 @@ class MPDQueue(object):
             term = Terminal()
             with term.hidden_cursor():
                 with term.location(0, 0):
-                    print( term.clear_eol + f"Search tag: {tag.title()}")
+                    print(term.clear_eol + f"Search tag: {tag.title()}")
                     print(term.clear_eol + f"{songs_left} in playlist")
                     if cs != {}:
-                        print( term.clear_eol + f"Current song: {title} by {artist} (genre: {genre})")
+                        print(term.clear_eol + f"Current song: {title} by {artist} (genre: {genre})")
                     print(
                         "[b]an song, [B]an artist, [c]hange tag, [w]ebsite, [s]ave info, [q]uit: ")
                     print(term.clear_eol)

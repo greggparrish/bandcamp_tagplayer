@@ -15,4 +15,3 @@ port = 6600
 
 [browser]
 browser = google-chrome
-

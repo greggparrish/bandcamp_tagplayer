@@ -1,3 +1,6 @@
+import argparse
+from tagplayer import Tagplayer
+
 """
 bandcamp_tagplayer
 Config file at: ~/.config/bandcamp_tagplayer/config
@@ -5,24 +8,17 @@ Config file at: ~/.config/bandcamp_tagplayer/config
 Options:
   -h --help                 Show this screen.
   -v --version              Show version.
-"""
 
-""" Code:
-Gregory Parrish
+Code:
+    Gregory Parrish
     https://github.com/greggparrish/bandcamp_tagplayer
 """
 
-import os
-import argparse
-
-from tagplayer import Tagplayer
-
-
 if __name__ == '__main__':
-    p=argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
+    p = argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
     p.add_argument('tag', help='Music genre', nargs='?', default=False)
-    p.add_argument('-v', '--version', action='version', version='bandcamp_tagplayer v. 1.10')
-    args=p.parse_args()
+    p.add_argument('-v', '--version', action='version', version='bandcamp_tagplayer v. 1.20')
+    args = p.parse_args()
 
     tag = False
     if args.tag:

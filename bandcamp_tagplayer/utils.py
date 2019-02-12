@@ -51,7 +51,7 @@ class Utils:
         genre = f"Genre: {track['genre'][0]}"
         website = track['website'][0]
         with open(cf['save_file'], 'a') as out:
-            saved = out.write( '\n' + date + '\n' + artist + '\n' + song + '\n' + genre + '\n' + website + '\n')
+            saved = out.write(f'\n {date} \n {artist} \n {song} \n {genre} \n {website} \n')
         return saved
 
     def ban(self, item_id, item_type):
@@ -101,16 +101,12 @@ class Utils:
                     show = 'Banning song'
                     Messages().menu_choice(show)
                 if c == 's':
-                    sf = cf['save_file']
                     show = f"Saving info to {cf['save_file']}"
                     Messages().menu_choice(show)
                     self.save_track_info(current_song)
                 if c == 'w':
                     try:
-                        artist_url = EasyID3(
-                            os.path.join(
-                                cf['music_dir'],
-                                current_song))['website'][0]
+                        EasyID3(os.path.join(cf['music_dir'], current_song))['website'][0]
                         show = 'Opening Bandcamp page'
                         Messages().menu_choice(show)
                         self.browser(current_song)

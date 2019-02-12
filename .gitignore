@@ -9,6 +9,7 @@
 Pipfile.lock
 bin
 build
+core
 develop-eggs
 dist
 eggs
