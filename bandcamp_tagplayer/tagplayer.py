@@ -74,7 +74,7 @@ class Tagplayer:
             self.ask_for_tag()
         else:
             try:
-                r = requests.get(f'https://bandcamp.com/tag/{self.tag}', headers=HEADERS)
+                r = requests.get(f'https://bandcamp.com/tag/{self.tag}?from=related', headers=HEADERS)
             except Exception as e:
                 print(e)
             soup = BeautifulSoup(r.text, 'lxml')
@@ -117,7 +117,7 @@ class Tagplayer:
             page = 1
             Messages().few_tag_results(self.tag)
         try:
-            r = requests.get(f'https://bandcamp.com/tag/{self.tag}?page={page}?sort_field={sort}', headers=HEADERS)
+            r = requests.get(f'https://bandcamp.com/tag/{self.tag}?from=related&page={page}&sort_field={sort}', headers=HEADERS)
         except requests.exceptions.RequestException as e:
             print(e)
             exit()
