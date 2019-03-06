@@ -20,7 +20,7 @@ from utils import Utils
 
 c = Config().conf_vars()
 BANNED_GENRES = [g.lower().strip() for g in c['banned_genres'].split(',')]
-HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1'}
+HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0'}
 
 
 class Tagplayer:
@@ -74,7 +74,7 @@ class Tagplayer:
             self.ask_for_tag()
         else:
             try:
-                r = requests.get(f'https://bandcamp.com/tag/{self.tag}?from=related', headers=HEADERS)
+                r = requests.get(f'https://bandcamp.com/tag/{self.tag}?sort_field=new')
             except Exception as e:
                 print(e)
             soup = BeautifulSoup(r.text, 'lxml')
