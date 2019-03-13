@@ -107,7 +107,7 @@ class Utils:
                     show = f"Saving info to {cf['save_file']}"
                     Messages().menu_choice(show)
                     self.save_track_info(current_song)
-                if c == 'w':
+                if c == 'p':
                     try:
                         EasyID3(os.path.join(cf['music_dir'], current_song))['website'][0]
                         show = 'Opening Bandcamp page'

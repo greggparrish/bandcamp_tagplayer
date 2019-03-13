@@ -57,7 +57,7 @@ class MPDQueue(object):
                         curr_song = 'paused'
                     else:
                         curr_song = m.currentsong()['file']
-                    self._write_status(songs_left, tag)
+                    self._write_status(songs_left, tag=tag, user=user)
                     sleep(2)
                 change = Utils().options_menu(curr_song, change)
         return change
@@ -70,7 +70,7 @@ class MPDQueue(object):
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
             m.update(rel_path)
 
-    def _write_status(self, songs_left, tag):
+    def _write_status(self, songs_left, tag=None, user=None):
         '''
           Write current song (if playing), # in playlist, current search tag
           and menu to term
@@ -86,6 +86,8 @@ class MPDQueue(object):
                 with term.location(0, 0):
                     if tag:
                         print(term.clear_eol + f"Search tag: {tag.title()}")
+                    if user:
+                        print(term.clear_eol + f"User collection: {user}")
                     print(term.clear_eol + f"{songs_left} tracks in current playlist")
                     if cs != {}:
                         print(term.clear_eol + f"Current song: {title} by {artist} (genre: {genre})")

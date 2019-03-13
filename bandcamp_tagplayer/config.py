@@ -37,14 +37,10 @@ class Config:
         path = self.format_path(os.path.join(CONFIGPATH, 'config'))
         conf.add_section("storage")
         conf.set("storage", "cache", "~/.config/bandcamp_tagplayer/bct_cache")
-        conf.set(
-            "storage",
-            "save_file",
-            "~/.config/bandcamp_tagplayer/save_file.txt")
         conf.add_section("player")
         conf.set("player", "player", "mpd")
         conf.add_section("mpd")
-        conf.set("mpd", "music_dir", "~/music")
+        conf.set("mpd", "music_dir", "~/Music")
         conf.set("mpd", "host", "localhost")
         conf.set("mpd", "port", "6600")
         conf.add_section("browser")

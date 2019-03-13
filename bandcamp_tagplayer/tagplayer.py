@@ -80,16 +80,16 @@ class Tagplayer:
         self.get_user_collection()
 
     def get_user_collection(self):
-        username = re.split('/', self.user)[-1] if '/' in self.user else self.user
-        user_url = f'https://bandcamp.com/{username}'
+        self.user = re.split('/', self.user)[-1] if '/' in self.user else self.user
+        user_url = f'https://bandcamp.com/{self.user}'
         user_page = requests.get(user_url, headers=HEADERS)
         if user_page.status_code != requests.codes.ok:
-            print(f'User {self.username} does not appear to be a valid user.')
+            print(f'User {self.user} does not appear to be a valid user.')
             sys.exit()
         soup = BeautifulSoup(user_page.content, 'lxml')
         pagedata = soup.find('div', id='pagedata')
         if not pagedata:
-            print(f'User page for {username} missing data.')
+            print(f'User page for {self.user} missing data.')
             sys.exit()
         pj = json.loads(pagedata.get('data-blob'))
         collection_count = pj.get('current_fan', 0).get('collection_count', 0)
@@ -97,7 +97,7 @@ class Tagplayer:
         last_token = pj.get('collection_data').get('last_token')
         self.parse_tracks(pj, page=True)
         cc = 0 if collection_count <= 45 else collection_count
-        print(f'Found {cc} tracks for {username}')
+        print(f'Found {cc} tracks for {self.user}')
         while cc > 0:
             print(f'Gathering data: {cc} tracks left')
             post_data = {'fan_id': fan_id, 'older_than_token': last_token, 'count': 40}
