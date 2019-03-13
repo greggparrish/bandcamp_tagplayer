@@ -16,11 +16,11 @@ cf = Config().conf_vars()
 
 class Utils:
     def symlink_musicdir(self):
-        '''
+        """
             Cache has to be within mpd music dir to load tracks,
             so symlink it if user didn't choose a path already in
             their mpd music dir
-        '''
+        """
         try:
             rel_path = cf['cache_dir'].split('/')[-1]
             os.symlink(
@@ -32,7 +32,7 @@ class Utils:
             pass
 
     def browser(self, filename):
-        ''' Open browser with Bandcamp artist url '''
+        """ Open browser with Bandcamp artist url """
         artist_url = EasyID3(
             os.path.join(
                 cf['music_dir'],
@@ -41,7 +41,7 @@ class Utils:
         return wb
 
     def save_track_info(self, current_song):
-        ''' Save artist, track, genre & url to text file set in config '''
+        """ Save artist, track, genre & url to text file set in config """
         term = Terminal()
         print(term.normal)
         date = '{0:%b %d, %Y %H:%M:%S}'.format(datetime.datetime.now())
@@ -55,12 +55,12 @@ class Utils:
         return saved
 
     def ban(self, item_id, item_type):
-        ''' Ban either a track or artist, won't dl in future '''
+        """ Ban either a track or artist, won't dl in future """
         banned = db.Database.ban_item(item_id, item_type)
         return banned
 
     def clear_cache(self):
-        ''' Remove Bandcamp mp3s from cache dir if older than a day '''
+        """ Remove Bandcamp mp3s from cache dir if older than a day. Please support the artists. """
         now_ts = int(time.time())
         files = [
             f for f in os.listdir(
@@ -76,7 +76,7 @@ class Utils:
                     os.remove(os.path.join(cf['cache_dir'], bc_track[0]))
 
     def options_menu(self, current_song, change_state):
-        ''' Render options menu and handle commands '''
+        """ Render options menu and handle commands """
         change = change_state
         term = Terminal()
         with term.location(0, term.height - 1):
@@ -84,7 +84,10 @@ class Utils:
                 c = term.inkey(1)
                 if c == 'c':
                     print(term.clear())
-                    change = True
+                    change = 'to_tag'
+                if c == 'u':
+                    print(term.clear())
+                    change = 'to_user'
                 if c == 'q':
                     print(term.clear())
                     print(term.normal)

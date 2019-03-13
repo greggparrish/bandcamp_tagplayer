@@ -33,21 +33,21 @@ class MPDQueue(object):
             sleep(5)
             try:
                 m.add(song)
-            except:
+            except Exception as exc:
                 try:
                     sleep(2)
                     m.add(song)
-                except:
+                except Exception as exc:
                     pass
 
-    def watch_playlist(self, tag):
+    def watch_playlist(self, tag=None, user=None):
         '''
         Check playlist every 2 seconds, if under 4 tracks, get more
         '''
         term = Terminal()
         print(term.clear())
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
-            change = False
+            change = None
             while True:
                 songs_left = len(m.playlist())
                 if songs_left <= 3 or change is True:
@@ -84,11 +84,12 @@ class MPDQueue(object):
             term = Terminal()
             with term.hidden_cursor():
                 with term.location(0, 0):
-                    print(term.clear_eol + f"Search tag: {tag.title()}")
-                    print(term.clear_eol + f"{songs_left} in playlist")
+                    if tag:
+                        print(term.clear_eol + f"Search tag: {tag.title()}")
+                    print(term.clear_eol + f"{songs_left} tracks in current playlist")
                     if cs != {}:
                         print(term.clear_eol + f"Current song: {title} by {artist} (genre: {genre})")
                     print(
-                        "[b]an song, [B]an artist, [c]hange tag, [w]ebsite, [s]ave info, [q]uit: ")
+                        "[c]hange tag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit: ")
                     print(term.clear_eol)
                     print(term.clear_eol)

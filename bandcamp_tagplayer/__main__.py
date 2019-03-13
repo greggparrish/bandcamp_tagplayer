@@ -17,13 +17,16 @@ Code:
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
     p.add_argument('tag', help='Music genre', nargs='?', default=False)
+    p.add_argument('-t', '--tag', help='Music genre', action='store', default=False)
+    p.add_argument('-u', '--user', help='Bandcamp username', action='store', default=False)
     p.add_argument('-v', '--version', action='version', version='bandcamp_tagplayer v. 1.20')
     args = p.parse_args()
-    tag = False
-    if args.tag:
-        tag = args.tag
+
+    tag = None
+    user= None
+
     try:
-        with Tagplayer(tag) as tp:
+        with Tagplayer(tag=args.tag, user=args.user) as tp:
             tp.check_tag()
     except Exception as e:
         print(f'ERROR: {e}')
