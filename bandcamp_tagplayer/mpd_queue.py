@@ -50,7 +50,7 @@ class MPDQueue(object):
             change = None
             while True:
                 songs_left = len(m.playlist())
-                if songs_left <= 3 or change is True:
+                if songs_left <= 3 or change:
                     break
                 else:
                     if m.status()['state'] != 'play':
@@ -90,6 +90,6 @@ class MPDQueue(object):
                     if cs != {}:
                         print(term.clear_eol + f"Current song: {title} by {artist} (genre: {genre})")
                     print(
-                        "[c]hange tag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit: ")
+                        "[c]hange tag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit ")
                     print(term.clear_eol)
                     print(term.clear_eol)

@@ -23,7 +23,7 @@ if __name__ == '__main__':
     args = p.parse_args()
 
     tag = None
-    user= None
+    user = None
 
     try:
         with Tagplayer(tag=args.tag, user=args.user) as tp:

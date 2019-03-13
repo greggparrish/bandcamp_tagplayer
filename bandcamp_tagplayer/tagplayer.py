@@ -77,7 +77,7 @@ class Tagplayer:
                 break
             else:
                 continue
-            self.get_user_collection()
+        self.get_user_collection()
 
     def get_user_collection(self):
         username = re.split('/', self.user)[-1] if '/' in self.user else self.user
