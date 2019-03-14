@@ -222,10 +222,8 @@ class Tagplayer:
             items = ar.get('items', None)
             self.has_more = ar.get('more-available', None)
             if not items:
-                self.page -= 2
+                self.page = abs(self.page - 2)
                 continue
-
-            # do not set has_more until we know it's False
 
             if 'items' in ar and len(ar['items']) > 0:
                 if self.has_more is False:
