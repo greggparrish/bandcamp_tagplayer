@@ -26,8 +26,7 @@ class Config:
             'mpd_host': conf['mpd']['host'],
             'mpd_port': conf['mpd']['port'],
             'banned_genres': conf['songs']['ban_list'],
-            'music_dir': self.format_path(conf['mpd']['music_dir']),
-            'save_file': self.format_path(conf['storage']['save_file'])
+            'music_dir': self.format_path(conf['mpd']['music_dir'])
         }
         return conf_vars
 
@@ -37,8 +36,6 @@ class Config:
         path = self.format_path(os.path.join(CONFIGPATH, 'config'))
         conf.add_section("storage")
         conf.set("storage", "cache", "~/.config/bandcamp_tagplayer/bct_cache")
-        conf.add_section("player")
-        conf.set("player", "player", "mpd")
         conf.add_section("mpd")
         conf.set("mpd", "music_dir", "~/Music")
         conf.set("mpd", "host", "localhost")

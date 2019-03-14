@@ -55,9 +55,7 @@ class Tagplayer:
             return True
 
     def ask_for_tag(self):
-        """
-          If started without tag or user changed tag through menu, get and slugify tag
-        """
+        """ If started without tag or user changed tag through menu, get and slugify tag """
         while True:
             term = Terminal()
             print(term.clear())
@@ -70,9 +68,7 @@ class Tagplayer:
         self.check_tag()
 
     def ask_for_user(self):
-        """
-          Get a username to stream their collection
-        """
+        """ Get a username to stream their collection """
         while True:
             term = Terminal()
             print(term.clear())
@@ -85,6 +81,7 @@ class Tagplayer:
         self.get_user_collection()
 
     def get_user_collection(self):
+        """ Hit API to get all tracks bought by a given user.  Store to self.user_collection.  """
         self.user = re.split('/', self.user)[-1] if '/' in self.user else self.user
         user_url = f'https://bandcamp.com/{self.user}'
         user_page = requests.get(user_url, headers=HEADERS)
@@ -117,10 +114,12 @@ class Tagplayer:
         """ Get track data from API response, load into self.user_collection """
         if page:
             tl = tracks.get('item_cache').get('collection')
-            new_tracks = [{'item_id': tl[t]['item_id'], 'item_url': tl[t]['item_url'], 'tralbum_type': tl[t]['tralbum_type']} for t in tl]
+            new_tracks = [{'item_id': tl[t]['item_id'], 'item_url': tl[t]['item_url'],
+                           'tralbum_type': tl[t]['tralbum_type']} for t in tl]
         else:
             tl = tracks.get('items')
-            new_tracks = [{'item_id': t['item_id'], 'item_url': t['item_url'], 'tralbum_type': t['tralbum_type']} for t in tl]
+            new_tracks = [{'item_id': t['item_id'], 'item_url': t['item_url'],
+                           'tralbum_type': t['tralbum_type']} for t in tl]
         self.user_collection += new_tracks
         return True
 
@@ -183,9 +182,7 @@ class Tagplayer:
                 self.load_collection()
 
     def grab_four(self, items):
-        """
-            Return 4 items from list, or all if less than 4
-        """
+        """ Return 4 items from list, or all if less than 4 """
         if len(items) > 4:
             return random.sample(items, 4)
         else:
@@ -199,6 +196,7 @@ class Tagplayer:
         self.get_song_meta(item_urls)
 
     def call_album_api(self):
+        """ Call API for more songs when playing by tag """
         sort = random.choice(['pop', 'new'])
         hub_data = {'tag': self.tag, 'page': self.page, 'sort': sort}
         try:
@@ -272,7 +270,6 @@ class Tagplayer:
                 self.related_tags = set(at)
                 # check track to make sure not tagged with banned genre
                 if soup and set(tag_list).isdisjoint(BANNED_GENRES):
-                    """ album meta from bs4 & current: """
                     artist = soup.find('span', itemprop='byArtist')
                     if artist:
                         bc_meta = re.search('current\: (.*?)},', r.text).group(1)
@@ -284,7 +281,6 @@ class Tagplayer:
                         full_date = full_date if full_date else str(datetime.datetime.now().year)
                         dm = re.search('\d{4}', full_date)
 
-                        """ song meta from trackinfo: """
                         songs = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
                         s_json = json.loads(f'[{songs}]')
                         s = random.choice(s_json)
@@ -308,14 +304,10 @@ class Tagplayer:
     def download_song(self, metadata):
         dl_url = metadata['dl_url']
         timestamp = int(time())
-        fn = [
-            'bctcache',
-            str(timestamp),
-            metadata['artist_id'],
-            metadata['track_id']]
+        fn = ['bctcache', str(timestamp), metadata['artist_id'], metadata['track_id']]
         filename = '_'.join(fn) + '.mp3'
         path = os.path.join(c['cache_dir'], filename)
-        """ If exists, load, if not dl """
+        # If exists, load, if not dl
         rel_path = c['cache_dir'].split('/')[-1]
         local_path = rel_path + '/' + filename
         if os.path.isfile(path) is True:

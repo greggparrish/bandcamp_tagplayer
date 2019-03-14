@@ -1,17 +1,13 @@
-[storage]
-cache = ~/.config/bandcamp_tagplayer/cache
-save_file = ~/.config/bandcamp_tagplayer/save_file.txt
-
-[player]
-player = mpd
-
-[songs]
-ban_list = noise, jazz, experimental, canada, funk, psychedelic 
-
 [mpd]
 music_dir = ~/music
 host = localhost
 port = 6600
+
+[storage]
+cache = ~/.config/bandcamp_tagplayer/cache
+
+[songs]
+ban_list = noise, jazz, experimental, canada, funk, psychedelic
 
 [browser]
 browser = google-chrome
