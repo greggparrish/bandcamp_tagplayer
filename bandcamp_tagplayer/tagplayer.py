@@ -34,6 +34,7 @@ class Tagplayer:
         self.metadata = {}
         self.page = 1
         self.page_limit = None
+        self.related_tags = []
         self.tag = tag
         self.user = user
         self.user_collection = []
@@ -110,7 +111,7 @@ class Tagplayer:
             np = r.json()
             self.parse_tracks(np, api=True)
             cc -= 40
-        self.load_collection()
+        self.monitor_mpd()
 
     def parse_tracks(self, tracks, page=None, api=None):
         """ Get track data from API response, load into self.user_collection """
@@ -163,8 +164,7 @@ class Tagplayer:
 
     def monitor_mpd(self):
         """
-          Keep watch of the  number of songs in current playlist,
-          if below 4, start downloading.
+          Keep watch of the  number of songs in current playlist, if below 4, start downloading.
           change == True means user has asked to change tag.
         """
         mpdq = MPDQueue()
@@ -198,34 +198,59 @@ class Tagplayer:
         item_urls = [t['item_url'] for t in tracks]
         self.get_song_meta(item_urls)
 
-    def get_albums(self):
-        """ Get urls of random albums. """
+    def call_album_api(self):
         sort = random.choice(['pop', 'new'])
-        if self.has_more and not self.page_limit:
-            self.page = 1 if not self.page else self.page + 1
-        else:
-            self.page_limit = self.page
-            self.page = random.randint(1, int(self.page_limit))
-        if self.page_limit and self.page_limit < 3:
-            Messages().few_tag_results(self.tag)
-
         hub_data = {'tag': self.tag, 'page': self.page, 'sort': sort}
         try:
             r = requests.post(self.hub_url, json=hub_data, headers=HEADERS)
+            return r.json()
         except requests.exceptions.RequestException as e:
             print(e)
             sys.exit()
 
-        if r.status_code != 404:
-            Messages().results_found(self.tag)
-            res = r.json()
-            albums = []
-            genres = []
-            for i in res['items']:
-                albums.append(i['tralbum_url'])
-                genres.append(i['genre'])
-            Messages().related_tags(','.join(set(genres)))
-            self.get_song_meta(set(albums))
+    def get_albums(self):
+        """ Get urls of random albums. """
+        # Max page number is 30
+        if self.page_limit:
+            self.page = random.randint(1, int(self.page_limit))
+        else:
+            self.page = random.randint(1, 3) if not self.page else random.randint(self.page, 30)
+
+        if self.page_limit and self.page_limit < 3:
+            Messages().few_tag_results(self.tag)
+
+        while True:
+            ar = self.call_album_api()
+            items = ar.get('items', None)
+            self.has_more = ar.get('more-available', None)
+            if not items:
+                self.page -= 2
+                continue
+
+            # do not set has_more until we know it's False
+
+            if 'items' in ar and len(ar['items']) > 0:
+                if self.has_more is False:
+                    # Response has items but no more available, so mark page limit
+                    self.page_limit = self.page
+                break
+            else:
+                continue
+
+        Messages().results_found(self.tag)
+        albums = []
+        genres = []
+        for i in ar['items']:
+            albums.append(i['tralbum_url'])
+            genres.append(i['genre'])
+        at = genres + list(self.related_tags)
+        random.shuffle(at)
+        if not self.related_tags:
+            self.related_tags = genres
+        else:
+            self.related_tags = set([a for a in at if a]) if at else genres
+        Messages().related_tags(', '.join(set(self.related_tags)))
+        self.get_song_meta(set(albums))
 
     def get_song_meta(self, albums):
         """
@@ -242,9 +267,9 @@ class Tagplayer:
                 soup = BeautifulSoup(r.text, 'lxml')
                 # check if song is tagged with anything from banlist
                 tags = soup.find_all('a', class_='tag')
-                tag_list = []
-                for t in tags:
-                    tag_list.append(str(t.text.split('/')))
+                tag_list = [t.text for t in tags]
+                at = (list(self.related_tags) + tag_list)[:10]
+                self.related_tags = set(at)
                 # check track to make sure not tagged with banned genre
                 if soup and set(tag_list).isdisjoint(BANNED_GENRES):
                     """ album meta from bs4 & current: """
@@ -273,7 +298,7 @@ class Tagplayer:
                                 'date': dm.group(0),
                                 'album_url': a,
                                 'dl_url': s['file']['mp3-128'],
-                                'genre': self.tag,
+                                'genre': ', '.join(set(tag_list)),
                             }
                             ban_check = db.Database.check_ban(metadata['artist_id'], metadata['track_id'])
                             if not ban_check:

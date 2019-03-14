@@ -17,17 +17,17 @@ class Messages:
         print(term.clear())
 
     def few_tag_results(self, tag):
-        print(f"Only 1 page of results for tag: {tag}.  Maybe try a related genre.")
+        print(f"Only 1 page of results for tag: {tag}.  Maybe try a related genre")
 
     def no_tag_results(self, tag):
         print(f"No results for tag: {tag}")
 
     def now_loading(self, artist, track):
-        print(f"Now loading: {track} by {artist}.")
+        print(f"Now loading: {track} by {artist}")
 
     def results_found(self, tag):
-        print(f"Downloading metadata for {tag} albums.")
+        print(f"Downloading metadata for {tag} albums")
 
     def related_tags(self, tags):
         term = Terminal()
-        print(term.bold + f"Related tags: {tags}." + term.normal)
+        print(term.bold + f"Related tags: {tags}" + term.normal)

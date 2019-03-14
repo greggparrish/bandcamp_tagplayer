@@ -83,7 +83,6 @@ class Utils:
             with term.cbreak():
                 c = term.inkey(1)
                 if c == 'c':
-                    print(term.clear())
                     change = 'to_tag'
                 if c == 'u':
                     print(term.clear())

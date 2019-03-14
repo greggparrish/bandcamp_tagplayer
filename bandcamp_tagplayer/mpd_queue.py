@@ -45,18 +45,23 @@ class MPDQueue(object):
         Check playlist every 2 seconds, if under 4 tracks, get more
         '''
         term = Terminal()
-        print(term.clear())
+        print(term.clear)
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
             change = None
+            curr_song = None
             while True:
                 songs_left = len(m.playlist())
                 if songs_left <= 3 or change:
+                    print(term.clear)
                     break
                 else:
                     if m.status()['state'] != 'play':
                         curr_song = 'paused'
                     else:
-                        curr_song = m.currentsong()['file']
+                        song_check = m.currentsong()['file']
+                        if song_check != curr_song:
+                            curr_song = song_check
+                            print(term.clear)
                     self._write_status(songs_left, tag=tag, user=user)
                     sleep(2)
                 change = Utils().options_menu(curr_song, change)
@@ -85,13 +90,10 @@ class MPDQueue(object):
             with term.hidden_cursor():
                 with term.location(0, 0):
                     if tag:
-                        print(term.clear_eol + f"Search tag: {tag.title()}")
+                        print(f"Search tag: {tag.title()}")
                     if user:
-                        print(term.clear_eol + f"User collection: {user}")
-                    print(term.clear_eol + f"{songs_left} tracks in current playlist")
+                        print(f"User collection: {user}")
+                    print(f"{songs_left} tracks in current playlist")
                     if cs != {}:
-                        print(term.clear_eol + f"Current song: {title} by {artist} (genre: {genre})")
-                    print(
-                        "[c]hange tag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit ")
-                    print(term.clear_eol)
-                    print(term.clear_eol)
+                        print(f"\n# Current song \nartist:\t{artist}\ntitle:\t{title}\ntags:\t{genre}")
+                    print("\n[c]hange tag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit")
