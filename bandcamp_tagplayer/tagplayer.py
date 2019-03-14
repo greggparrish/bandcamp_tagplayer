@@ -99,7 +99,7 @@ class Tagplayer:
         cc = 0 if collection_count <= 45 else collection_count
         print(f'Found {cc} tracks for {self.user}')
         while cc > 0:
-            print(f'Gathering data: {cc} tracks left')
+            print(f'Getting collection data: {cc} tracks left')
             post_data = {'fan_id': fan_id, 'older_than_token': last_token, 'count': 40}
             user_api_url = 'https://bandcamp.com/api/fancollection/1/collection_items'
             r = requests.post(user_api_url, json=post_data, headers=HEADERS)
@@ -319,9 +319,19 @@ class Tagplayer:
 
 
 if __name__ == '__main__':
-    tag = False
+    import argparse
+    p = argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
+    p.add_argument('tag', help='Music genre', nargs='?', default=False)
+    p.add_argument('-t', '--tag', help='Music genre', action='store', default=False)
+    p.add_argument('-u', '--user', help='Bandcamp username', action='store', default=False)
+    p.add_argument('-v', '--version', action='version', version='bandcamp_tagplayer v. 1.30')
+    args = p.parse_args()
+
+    tag = None
+    user = None
+
     try:
-        with Tagplayer(tag) as tp:
-            tp.ask_for_tag()
+        with Tagplayer(tag=args.tag, user=args.user) as tp:
+            tp.check_tag()
     except Exception as e:
         print(f'ERROR: {e}')
