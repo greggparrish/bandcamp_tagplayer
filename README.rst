@@ -32,8 +32,8 @@ USAGE
 - python3 tagplayer <TAG>
 - ex: python3 tagplayer darkwave
 - If the genre contains spaces, hyphenate it or use quotation marks.
-- ex: python3 bandcamp_tagplayer new-wave
-- ex: python3 bandcamp_tagplayer 'new wave'
+- ex: python3 tagplayer new-wave
+- ex: python3 tagplayer 'new wave'
 - Use --user to stream a user's collection.
-- python3 bandcamp_tagplayer --user <USERNAME>
-- ex: python3 bandcamp_tagplayer --user realredadax
+- python3 tagplayer --user <USERNAME>
+- ex: python3 tagplayer --user realredadax
