@@ -241,8 +241,9 @@ class Tagplayer:
         for i in ar['items']:
             albums.append(i['tralbum_url'])
             genres.append(i['genre'])
-        at = genres + list(self.related_tags)
-        random.shuffle(at)
+        all_tags = genres + list(self.related_tags)
+        random.shuffle(all_tags)
+        at = all_tags[:10]
         if not self.related_tags:
             self.related_tags = genres
         else:
