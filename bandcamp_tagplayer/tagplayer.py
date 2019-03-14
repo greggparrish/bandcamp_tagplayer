@@ -28,8 +28,12 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/2010010
 class Tagplayer:
 
     def __init__(self, tag=None, user=None):
+        self.curr_page = None
+        self.has_more = None
+        self.hub_url = 'https://bandcamp.com/api/hub/1/dig_deeper'
         self.metadata = {}
-        self.numpages = False
+        self.page = 1
+        self.page_limit = None
         self.tag = tag
         self.user = user
         self.user_collection = []
@@ -119,6 +123,12 @@ class Tagplayer:
         self.user_collection += new_tracks
         return True
 
+    def no_results(self):
+        """ Prints no results msg to terminal, asks for a new tag"""
+        Messages().no_tag_results(self.tag)
+        sleep(1)
+        self.ask_for_tag()
+
     def check_tag(self):
         """
           Verify that a tag has albums, and get the number of pages of the results.
@@ -135,24 +145,21 @@ class Tagplayer:
             sleep(2)
             self.ask_for_tag()
         else:
+            hub_data = {'tag': self.tag, 'page': 1, 'sort': 'new'}
             try:
-                r = requests.get(f'https://bandcamp.com/tag/{self.tag}?sort_field=new&page=1', headers=HEADERS)
+                r = requests.post(self.hub_url, json=hub_data, headers=HEADERS)
             except Exception as e:
-                print(e)
-            soup = BeautifulSoup(r.text, 'lxml')
-            album_list = soup.find_all('li', class_='item')
-            if self.numpages is False:
-                pages = soup.find_all('a', class_='pagenum')
-                if not pages and album_list != '':
-                    self.numpages = 1
-                else:
-                    self.numpages = pages[-1].contents[0]
-            if not album_list:
-                Messages().no_tag_results(self.tag)
-                sleep(1)
-                self.ask_for_tag()
-            if self.numpages is not False:
+                self.no_results()
+            if not r:
+                self.no_results()
+            res = r.json()
+            tracks = res.get('items', None)
+            self.has_more = res.get('more_available', None)
+
+            if tracks and len(tracks) > 2:
                 self.monitor_mpd()
+            else:
+                self.no_results()
 
     def monitor_mpd(self):
         """
@@ -185,6 +192,7 @@ class Tagplayer:
             return random.sample(items, len(items))
 
     def load_collection(self):
+        """ Select tracks, send their urls to get_song_meta """
         tracks = self.grab_four(self.user_collection)
         # item_ids = [t['item_id'] for t in tracks]
         item_urls = [t['item_url'] for t in tracks]
@@ -193,28 +201,31 @@ class Tagplayer:
     def get_albums(self):
         """ Get urls of random albums. """
         sort = random.choice(['pop', 'new'])
-        if self.numpages != 1:
-            page = random.randint(1, int(self.numpages))
+        if self.has_more and not self.page_limit:
+            self.page = 1 if not self.page else self.page + 1
         else:
-            page = 1
+            self.page_limit = self.page
+            self.page = random.randint(1, int(self.page_limit))
+        if self.page_limit and self.page_limit < 3:
             Messages().few_tag_results(self.tag)
+
+        hub_data = {'tag': self.tag, 'page': self.page, 'sort': sort}
         try:
-            r = requests.get(f'https://bandcamp.com/tag/{self.tag}?from=related&page={page}&sort_field={sort}', headers=HEADERS)
+            r = requests.post(self.hub_url, json=hub_data, headers=HEADERS)
         except requests.exceptions.RequestException as e:
             print(e)
             sys.exit()
+
         if r.status_code != 404:
             Messages().results_found(self.tag)
-            soup = BeautifulSoup(r.text, 'lxml')
-            album_list = soup.find_all('li', class_='item')
-            tags = soup.find_all('a', class_='related_tag')
-            tag_list = ', '.join([t.text for t in tags])
-            Messages().related_tags(tag_list)
+            res = r.json()
             albums = []
-            for a in album_list:
-                if a:
-                    albums.append(a.find('a')['href'])
-        self.get_song_meta(albums)
+            genres = []
+            for i in res['items']:
+                albums.append(i['tralbum_url'])
+                genres.append(i['genre'])
+            Messages().related_tags(','.join(set(genres)))
+            self.get_song_meta(set(albums))
 
     def get_song_meta(self, albums):
         """
@@ -239,7 +250,6 @@ class Tagplayer:
                     """ album meta from bs4 & current: """
                     artist = soup.find('span', itemprop='byArtist')
                     if artist:
-                        artist = artist.find('a').text
                         bc_meta = re.search('current\: (.*?)},', r.text).group(1)
                         m_json = json.loads(bc_meta + '}')
                         if 'release_date' in m_json:
@@ -248,19 +258,19 @@ class Tagplayer:
                             full_date = m_json['publish_date']
                         full_date = full_date if full_date else str(datetime.datetime.now().year)
                         dm = re.search('\d{4}', full_date)
-                        date = dm.group(0)
+
                         """ song meta from trackinfo: """
                         songs = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
                         s_json = json.loads(f'[{songs}]')
                         s = random.choice(s_json)
                         if s['file'] is not None:
                             metadata = {
-                                'artist': artist,
+                                'artist': artist.find('a').text,
                                 'artist_id': str(m_json['band_id']),
                                 'track': s['title'],
                                 'track_id': str(s['track_id']),
                                 'album': m_json['title'],
-                                'date': date,
+                                'date': dm.group(0),
                                 'album_url': a,
                                 'dl_url': s['file']['mp3-128'],
                                 'genre': self.tag,
@@ -324,7 +334,6 @@ if __name__ == '__main__':
     p.add_argument('tag', help='Music genre', nargs='?', default=False)
     p.add_argument('-t', '--tag', help='Music genre', action='store', default=False)
     p.add_argument('-u', '--user', help='Bandcamp username', action='store', default=False)
-    p.add_argument('-v', '--version', action='version', version='bandcamp_tagplayer v. 1.30')
     args = p.parse_args()
 
     tag = None
