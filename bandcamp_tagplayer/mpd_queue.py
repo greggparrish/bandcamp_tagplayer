@@ -96,4 +96,4 @@ class MPDQueue:
                     print(f"{songs_left} tracks in current playlist")
                     if cs != {}:
                         print(f"\n# Current song \nartist:\t{artist}\ntitle:\t{title}\ntags:\t{genre}")
-                    print("\nchange [t]ag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit")
+                    print("\nchange [t]ag, change [u]sername, [w]ebsite, [b]an song, [B]an artist, [q]uit")
