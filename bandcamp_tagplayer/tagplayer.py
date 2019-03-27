@@ -3,6 +3,7 @@ import json
 import os
 import random
 import re
+import requests
 import sys
 from time import sleep, time
 
@@ -12,7 +13,6 @@ from clint.textui import progress
 from mutagen import File
 from mutagen.id3 import ID3NoHeaderError
 from mutagen.easyid3 import EasyID3
-import requests
 
 from config import Config
 import db
@@ -28,7 +28,6 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/2010010
 class Tagplayer:
 
     def __init__(self, tag=None, user=None):
-        self.curr_page = None
         self.has_more = None
         self.hub_url = 'https://bandcamp.com/api/hub/1/dig_deeper'
         self.metadata = {}
@@ -124,7 +123,7 @@ class Tagplayer:
         return True
 
     def no_results(self):
-        """ Prints no results msg to terminal, asks for a new tag"""
+        """ Prints no results msg to terminal, asks for a new tag """
         Messages().no_tag_results(self.tag)
         sleep(1)
         self.ask_for_tag()
@@ -222,7 +221,7 @@ class Tagplayer:
             items = ar.get('items', None)
             self.has_more = ar.get('more-available', None)
             if not items:
-                self.page = abs(self.page - 2)
+                self.page = abs(self.page - 1)
                 continue
 
             if 'items' in ar and len(ar['items']) > 0:

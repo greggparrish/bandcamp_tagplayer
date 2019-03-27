@@ -82,7 +82,7 @@ class Utils:
         with term.location(0, term.height - 1):
             with term.cbreak():
                 c = term.inkey(1)
-                if c == 'c':
+                if c == 't':
                     change = 'to_tag'
                 if c == 'u':
                     print(term.clear())

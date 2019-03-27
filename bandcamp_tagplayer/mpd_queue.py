@@ -26,7 +26,7 @@ class MPDConn:
         self.client.disconnect()
 
 
-class MPDQueue(object):
+class MPDQueue:
     def add_song(self, song):
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
             self.update_mpd()
@@ -96,4 +96,4 @@ class MPDQueue(object):
                     print(f"{songs_left} tracks in current playlist")
                     if cs != {}:
                         print(f"\n# Current song \nartist:\t{artist}\ntitle:\t{title}\ntags:\t{genre}")
-                    print("\n[c]hange tag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit")
+                    print("\nchange [t]ag, change [u]sername, [p]rofile on BC, [b]an song, [B]an artist, [q]uit")
