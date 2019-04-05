@@ -359,12 +359,12 @@ def main():
     import argparse
     p = argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
     p.add_argument('tag', help='Music genre', nargs='?', default=False)
-    p.add_argument('-t', '--tag', help='Music genre', action='store', default=False)
+    p.add_argument('-t', '--tag', help='Music genre', action='store', dest='tag2', metavar='tag', default=False)
     p.add_argument('-u', '--user', help='Bandcamp username', action='store', default=False)
     args = p.parse_args()
 
     try:
-        with Tagplayer(tag=args.tag, user=args.user) as tp:
+        with Tagplayer(tag=(args.tag or args.tag2), user=args.user) as tp:
             tp.check_tag()
     except Exception as e:
         print(f'ERROR: {e}')
