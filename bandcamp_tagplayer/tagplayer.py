@@ -358,9 +358,9 @@ def main():
     """
     import argparse
     p = argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
-    p.add_argument('tag', help='Music genre', nargs='?', default=False)
-    p.add_argument('-t', '--tag', help='Music genre', action='store', dest='tag2', metavar='tag', default=False)
-    p.add_argument('-u', '--user', help='Bandcamp username', action='store', default=False)
+    p.add_argument('tag', help='Music genre', nargs='?', default=None)
+    p.add_argument('-t', '--tag', help='Music genre', action='store', dest='tag2', metavar='tag', default=None)
+    p.add_argument('-u', '--user', help='Bandcamp username', action='store', metavar='user', default=None)
     args = p.parse_args()
 
     try:
