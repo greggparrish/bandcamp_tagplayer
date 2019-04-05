@@ -1,9 +1,9 @@
 from blessed import Terminal
 from time import sleep
-
-from config import Config
 from mpd import MPDClient
-from utils import Utils
+
+from .config import Config
+from .utils import Utils
 
 c = Config().conf_vars()
 

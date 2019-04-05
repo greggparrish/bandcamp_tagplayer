@@ -14,11 +14,11 @@ from mutagen import File
 from mutagen.id3 import ID3NoHeaderError
 from mutagen.easyid3 import EasyID3
 
-from config import Config
-import db
-from mpd_queue import MPDQueue
-from messages import Messages
-from utils import Utils
+from .config import Config
+from . import db
+from .mpd_queue import MPDQueue
+from .messages import Messages
+from .utils import Utils
 
 c = Config().conf_vars()
 BANNED_GENRES = [g.lower().strip() for g in c['banned_genres'].split(',')]
@@ -343,7 +343,19 @@ class Tagplayer:
         song.save()
 
 
-if __name__ == '__main__':
+def main():
+    """
+    bandcamp_tagplayer
+    Config file at: ~/.config/bandcamp_tagplayer/config
+
+    Options:
+      -h --help                 Show this screen.
+      -v --version              Show version.
+
+    Code:
+        Gregory Parrish
+        https://github.com/greggparrish/bandcamp_tagplayer
+    """
     import argparse
     p = argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
     p.add_argument('tag', help='Music genre', nargs='?', default=False)
@@ -351,11 +363,12 @@ if __name__ == '__main__':
     p.add_argument('-u', '--user', help='Bandcamp username', action='store', default=False)
     args = p.parse_args()
 
-    tag = None
-    user = None
-
     try:
         with Tagplayer(tag=args.tag, user=args.user) as tp:
             tp.check_tag()
     except Exception as e:
         print(f'ERROR: {e}')
+
+
+if __name__ == '__main__':
+    main()
