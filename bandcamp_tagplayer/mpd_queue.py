@@ -50,7 +50,7 @@ class MPDQueue:
             change = None
             curr_song = None
             while True:
-                songs_left = len(m.playlist())
+                songs_left = self._songs_left(m)
                 if songs_left <= 3 or change:
                     print(term.clear)
                     break
@@ -74,6 +74,17 @@ class MPDQueue:
         rel_path = c['cache_dir'].split('/')[-1]
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
             m.update(rel_path)
+
+    def _songs_left(self, m):
+        '''
+          Get the number of songs remaining in the playlist/queue regardless
+          of mpd consume mode.
+        '''
+        cs = m.currentsong()
+        if 'pos' in cs:
+            return len(m.playlistinfo(cs['pos'] + ':'))
+        else:
+            return len(m.playlist())
 
     def _write_status(self, m, songs_left, tag=None, user=None):
         '''
