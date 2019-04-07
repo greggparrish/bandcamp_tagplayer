@@ -25,7 +25,7 @@ setup(
     install_requires=required,
     entry_points={
         'console_scripts': [
-            'bandcamp_tagplayer=bandcamp_tagplayer.__main__:main',
+            'bandcamp-tagplayer=bandcamp_tagplayer.__main__:main',
         ],
     },
 )
