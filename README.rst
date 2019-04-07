@@ -14,12 +14,8 @@ REQUIRES
 
 INSTALL
 -------
-- Download zip
-- unzip bandcamp_tagplayer-master.zip
-- cd bandcamp_tagplayer-master
-- pip3 install -r requirements.txt (or pipenv install)
-- cd bandcamp_tagplayer
-- python3 tagplayer.py <TAG>
+- wget https://github.com/greggparrish/bandcamp_tagplayer/archive/master.tar.gz -O bandcamp_tagplayer.tar.gz
+- pip install bandcamp_tagplayer.tar.gz
 
 CONFIG
 ------
@@ -29,11 +25,11 @@ CONFIG
 
 USAGE
 -----
-- python3 tagplayer <TAG>
-- ex: python3 tagplayer darkwave
+- bandcamp_tagplayer <TAG>
+- ex: bandcamp_tagplayer darkwave
 - If the genre contains spaces, hyphenate it or use quotation marks.
-- ex: python3 tagplayer new-wave
-- ex: python3 tagplayer 'new wave'
+- ex: bandcamp_tagplayer new-wave
+- ex: bandcamp_tagplayer 'new wave'
 - Use --user to stream a user's collection.
-- python3 tagplayer --user <USERNAME>
-- ex: python3 tagplayer --user realredadax
+- bandcamp_tagplayer --user <USERNAME>
+- ex: bandcamp_tagplayer --user realredadax
