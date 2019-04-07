@@ -7,9 +7,9 @@ import webbrowser
 from blessed import Terminal
 from mutagen.easyid3 import EasyID3
 
-from config import Config
-import db
-from messages import Messages
+from .config import Config
+from . import db
+from .messages import Messages
 
 cf = Config().conf_vars()
 
