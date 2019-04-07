@@ -50,7 +50,7 @@ class MPDQueue:
             change = None
             curr_song = None
             while True:
-                songs_left = len(m.playlist())
+                songs_left = self._songs_left(m)
                 if songs_left <= 3 or change:
                     print(term.clear)
                     break
@@ -62,7 +62,7 @@ class MPDQueue:
                         if song_check != curr_song:
                             curr_song = song_check
                             print(term.clear)
-                    self._write_status(songs_left, tag=tag, user=user)
+                    self._write_status(m=m, songs_left=songs_left, tag=tag, user=user)
                     sleep(2)
                 change = Utils().options_menu(curr_song, change)
         return change
@@ -75,25 +75,35 @@ class MPDQueue:
         with MPDConn(c['mpd_host'], c['mpd_port']) as m:
             m.update(rel_path)
 
-    def _write_status(self, songs_left, tag=None, user=None):
+    def _songs_left(self, m):
+        '''
+          Get the number of songs remaining in the playlist/queue regardless
+          of mpd consume mode.
+        '''
+        cs = m.currentsong()
+        if 'pos' in cs:
+            return len(m.playlistinfo(cs['pos'] + ':'))
+        else:
+            return len(m.playlist())
+
+    def _write_status(self, m, songs_left, tag=None, user=None):
         '''
           Write current song (if playing), # in playlist, current search tag
           and menu to term
         '''
-        with MPDConn(c['mpd_host'], c['mpd_port']) as m:
-            cs = m.currentsong()
-            if cs != {}:
-                genre = cs.get('genre', '')
-                title = cs.get('title', '')
-                artist = cs.get('artist', '')
-            term = Terminal()
-            with term.hidden_cursor():
-                with term.location(0, 0):
-                    if tag:
-                        print(f"Search tag: {tag.title()}")
-                    if user:
-                        print(f"User collection: {user}")
-                    print(f"{songs_left} tracks in current playlist")
-                    if cs != {}:
-                        print(f"\n# Current song \nartist:\t{artist}\ntitle:\t{title}\ntags:\t{genre}")
-                    print("\nchange [t]ag, change [u]sername, [w]ebsite, [b]an song, [B]an artist, [q]uit")
+        cs = m.currentsong()
+        if cs != {}:
+            genre = cs.get('genre', '')
+            title = cs.get('title', '')
+            artist = cs.get('artist', '')
+        term = Terminal()
+        with term.hidden_cursor():
+            with term.location(0, 0):
+                if tag:
+                    print(f"Search tag: {tag.title()}")
+                if user:
+                    print(f"User collection: {user}")
+                print(f"{songs_left} tracks in current playlist")
+                if cs != {}:
+                    print(f"\n# Current song \nartist:\t{artist}\ntitle:\t{title}\ntags:\t{genre}")
+                print("\nchange [t]ag, change [u]sername, [w]ebsite, [b]an song, [B]an artist, [q]uit")
