@@ -3,7 +3,7 @@ import sys
 from setuptools import setup, find_packages
 
 if sys.version_info < (3, 6):
-    sys.exit("Bandcamp_tagplayer requires python <= 3.6.")
+    sys.exit("Bandcamp_tagplayer requires python >= 3.6.")
 
 VERSION = '2.0'
 

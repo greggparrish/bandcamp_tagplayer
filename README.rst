@@ -9,7 +9,7 @@ The file cache is cleaned on startup, removing files older than 24 hours.
 
 REQUIRES
 --------
-- **Python 3.6**
+- **Python 3.6+**
 - MPD
 
 INSTALL

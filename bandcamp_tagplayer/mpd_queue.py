@@ -78,13 +78,18 @@ class MPDQueue:
     def _songs_left(self, m):
         '''
           Get the number of songs remaining in the playlist/queue regardless
-          of mpd consume mode.
+          of mpd consume mode or random status.
         '''
-        cs = m.currentsong()
-        if 'pos' in cs:
-            return len(m.playlistinfo(cs['pos'] + ':'))
-        else:
+        consume = m.status().get('consume')
+
+        if consume == 1:
             return len(m.playlist())
+        else:
+            cs = m.currentsong()
+            if 'pos' in cs:
+                return len(m.playlistinfo(cs['pos'] + ':'))
+            else:
+                return len(m.playlist())
 
     def _write_status(self, m, songs_left, tag=None, user=None):
         '''
@@ -92,6 +97,7 @@ class MPDQueue:
           and menu to term
         '''
         cs = m.currentsong()
+        pl = len(m.playlist())
         if cs != {}:
             genre = cs.get('genre', '')
             title = cs.get('title', '')
@@ -103,7 +109,7 @@ class MPDQueue:
                     print(f"Search tag: {tag.title()}")
                 if user:
                     print(f"User collection: {user}")
-                print(f"{songs_left} tracks in current playlist")
+                print(f"{pl} tracks in current playlist")
                 if cs != {}:
                     print(f"\n# Current song \nartist:\t{artist}\ntitle:\t{title}\ntags:\t{genre}")
                 print("\nchange [t]ag, change [u]sername, [w]ebsite, [b]an song, [B]an artist, [q]uit")
