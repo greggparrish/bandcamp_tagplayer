@@ -82,7 +82,7 @@ class MPDQueue:
         '''
         consume = m.status().get('consume')
 
-        if consume == 1:
+        if consume == '1':
             return len(m.playlist())
         else:
             cs = m.currentsong()
