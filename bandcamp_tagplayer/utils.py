@@ -25,9 +25,7 @@ class Utils:
             rel_path = cf['cache_dir'].split('/')[-1]
             os.symlink(
                 cf['cache_dir'],
-                os.path.join(
-                    cf['music_dir'],
-                    rel_path))
+                os.path.join(cf['music_dir'], rel_path))
         except FileExistsError:
             pass
 

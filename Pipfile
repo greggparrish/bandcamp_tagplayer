@@ -23,6 +23,3 @@ soupsieve = ">=1.9.1"
 urllib3 = ">=1.25.2"
 wcwidth = ">=0.1.7"
 Unidecode = ">=1.0.23"
-
-[requires]
-python_version = "3.6"

@@ -270,28 +270,29 @@ class Tagplayer:
                 if soup and set(tag_list).isdisjoint(BANNED_GENRES):
                     artist = soup.find('span', itemprop='byArtist')
                     if artist:
-                        bc_meta = re.search('current\: (.*?)},', r.text).group(1)
-                        m_json = json.loads(bc_meta + '}')
-                        if 'release_date' in m_json:
-                            full_date = m_json['release_date']
-                        elif 'publish_date' in m_json:
-                            full_date = m_json['publish_date']
-                        full_date = full_date if full_date else str(datetime.datetime.now().year)
-                        dm = re.search('\d{4}', full_date)
-
-                        songs = re.search('trackinfo\: \[(.*)\]', r.text).group(1)
-                        s_json = json.loads(f'[{songs}]')
-                        s = random.choice(s_json)
-                        if s['file'] is not None:
+                        all_js = soup.find_all('script', type='text/javascript')
+                        for j in all_js:
+                            tralbum = j.get('data-tralbum')
+                            if tralbum:
+                                break
+                        if not tralbum:
+                            continue
+                        t_json = json.loads(tralbum)
+                        track_info = t_json["trackinfo"]
+                        s = random.choice(track_info)
+                        if s.get('file') is not None:
+                            isodate = t_json.get('current').get('release_date')
+                            date = datetime.datetime.strptime(isodate, '%d %b %Y %H:%M:%S %Z').strftime("%Y-%m-%d") if isodate else ""
                             metadata = {
-                                'artist': artist.find('a').text,
-                                'artist_id': str(m_json['band_id']),
-                                'track': s['title'],
-                                'track_id': str(s['track_id']),
-                                'album': m_json['title'],
-                                'date': dm.group(0),
+                                'artist': t_json.get('artist'),
+                                'artist_id': f'{t_json.get("current").get("band_id")}',
+                                'title': f'{s.get("title")}',
+                                'track': f'{s.get("track_num")}',
+                                'track_id': f'{s.get("track_id")}',
+                                'album': t_json.get('current').get('title'),
+                                'date': date,
                                 'album_url': a,
-                                'dl_url': s['file']['mp3-128'],
+                                'dl_url': s['file'].get('mp3-128'),
                                 'genre': ', '.join(set(tag_list)),
                             }
                             ban_check = db.Database.check_ban(metadata['artist_id'], metadata['track_id'])
@@ -316,7 +317,7 @@ class Tagplayer:
             except requests.exceptions.RequestException as e:
                 print(e)
                 quit()
-            Messages().now_loading(metadata['artist'], metadata['track'])
+            Messages().now_loading(metadata['artist'], metadata['title'])
             with open(path, 'wb') as t:
                 total_length = int(r.headers.get('content-length', 0))
                 for chunk in progress.bar(r.iter_content(
@@ -333,7 +334,8 @@ class Tagplayer:
             song = EasyID3(path)
         except ID3NoHeaderError:
             song = File(path, easy=True)
-        song['title'] = metadata['track']
+        song['title'] = metadata['title']
+        song['tracknumber'] = metadata['track']
         song['artist'] = metadata['artist']
         song['album'] = metadata['album']
         if metadata['genre']:
