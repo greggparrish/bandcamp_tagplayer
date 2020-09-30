@@ -26,10 +26,14 @@ CONFIG
 USAGE
 -----
 - bandcamp-tagplayer <TAG>
-- ex: bandcamp-tagplayer darkwave
+    - ex: bandcamp-tagplayer darkwave
+
 - If the genre contains spaces, hyphenate it or use quotation marks.
-- ex: bandcamp-tagplayer new-wave
-- ex: bandcamp-tagplayer 'new wave'
+    - ex: bandcamp-tagplayer new-wave
+    - ex: bandcamp-tagplayer 'new wave'
+
+- For multiple genres, separate tags by space.
+    - ex: bandcamp-tagplayer dark folk france
+
 - Use --user to stream a user's collection.
-- bandcamp-tagplayer --user <USERNAME>
-- ex: bandcamp-tagplayer --user realredadax
+    - bandcamp-tagplayer --user <USERNAME>

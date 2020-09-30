@@ -40,7 +40,7 @@ class MPDQueue:
                 except Exception as exc:
                     pass
 
-    def watch_playlist(self, tag=None, user=None):
+    def watch_playlist(self, tags=None, user=None):
         '''
         Check playlist every 2 seconds, if under 4 tracks, get more
         '''
@@ -62,7 +62,7 @@ class MPDQueue:
                         if song_check != curr_song:
                             curr_song = song_check
                             print(term.clear)
-                    self._write_status(m=m, songs_left=songs_left, tag=tag, user=user)
+                    self._write_status(m=m, songs_left=songs_left, tags=tags, user=user)
                     sleep(2)
                 change = Utils().options_menu(curr_song, change)
         return change
@@ -91,7 +91,7 @@ class MPDQueue:
             else:
                 return len(m.playlist())
 
-    def _write_status(self, m, songs_left, tag=None, user=None):
+    def _write_status(self, m, songs_left, tags=None, user=None):
         '''
           Write current song (if playing), # in playlist, current search tag
           and menu to term
@@ -105,11 +105,11 @@ class MPDQueue:
         term = Terminal()
         with term.hidden_cursor():
             with term.location(0, 0):
-                if tag:
-                    print(f"Search tag: {tag.title()}")
+                if tags:
+                    print(f"Search tag(s): {(', ').join(tags)}")
                 if user:
                     print(f"User collection: {user}")
                 print(f"{pl} tracks in current playlist")
                 if cs != {}:
                     print(f"\n# Current song \nartist:\t{artist}\ntitle:\t{title}\ntags:\t{genre}")
-                print("\nchange [t]ag, change [u]sername, [w]ebsite, [b]an song, [B]an artist, [q]uit")
+                print("\nchange [t]ags, change [u]sername, [w]ebsite, [b]an song, [B]an artist, [q]uit")

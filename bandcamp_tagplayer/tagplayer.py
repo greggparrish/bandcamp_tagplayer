@@ -27,14 +27,14 @@ HEADERS = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/2010010
 
 class Tagplayer:
 
-    def __init__(self, tag=None, user=None):
+    def __init__(self, tags=None, user=None):
         self.has_more = None
-        self.hub_url = 'https://bandcamp.com/api/hub/1/dig_deeper'
+        self.hub_url = 'https://bandcamp.com/api/hub/2/dig_deeper'
         self.metadata = {}
         self.page = 1
         self.page_limit = None
         self.related_tags = []
-        self.tag = tag
+        self.tags = tags
         self.user = user
         self.user_collection = []
 
@@ -58,12 +58,11 @@ class Tagplayer:
         while True:
             term = Terminal()
             print(term.clear())
-            tag = input("Enter a tag: ")
+            tag = input("Enter genre(s): ")
             if tag:
-                self.tag = re.sub(' ', '-', tag)
+                tags = re.sub(',', ' ', tag)
+                self.tags = re.sub(' +', ' ', tags).split(' ')
                 break
-            else:
-                continue
         self.check_tag()
 
     def ask_for_user(self):
@@ -124,7 +123,7 @@ class Tagplayer:
 
     def no_results(self):
         """ Prints no results msg to terminal, asks for a new tag """
-        Messages().no_tag_results(self.tag)
+        Messages().no_tag_results(self.tags)
         sleep(1)
         self.ask_for_tag()
 
@@ -137,17 +136,17 @@ class Tagplayer:
         if self.user:
             self.get_user_collection()
             return
-        elif not self.tag and not self.user:
+        elif not self.tags and not self.user:
             self.ask_for_tag()
-        elif self.tag.lower() in BANNED_GENRES:
-            print(f'\nTag {self.tag} is banned in your config file.\nEither remove it from your ban_list or choose another tag.')
+        elif not set(self.tags).isdisjoint(BANNED_GENRES):
+            print(f'\nTag banned in your config file.\nEither remove it from your ban_list or choose another tag.')
             sleep(2)
             self.ask_for_tag()
         else:
-            hub_data = {'tag': self.tag, 'page': 1, 'sort': 'new'}
+            hub_data = {"filters": {"format": "all", "location": 0, "sort": "new", "tags": self.tags}, "page": "1"}
             try:
                 r = requests.post(self.hub_url, json=hub_data, headers=HEADERS)
-            except Exception as e:
+            except Exception:
                 self.no_results()
             if not r:
                 self.no_results()
@@ -163,19 +162,19 @@ class Tagplayer:
     def monitor_mpd(self):
         """
           Keep watch of the  number of songs in current playlist, if below 4, start downloading.
-          change == True means user has asked to change tag.
+          change == True means user has asked to change tags.
         """
         mpdq = MPDQueue()
-        change = mpdq.watch_playlist(tag=self.tag, user=self.user)
+        change = mpdq.watch_playlist(tags=self.tags, user=self.user)
         if change:
             self.user = None
-            self.tag = None
+            self.tags = None
             if change == 'to_tag':
                 self.ask_for_tag()
             if change == 'to_user':
                 self.ask_for_user()
         else:
-            if self.tag:
+            if self.tags:
                 self.get_albums()
             if self.user:
                 self.load_collection()
@@ -197,7 +196,7 @@ class Tagplayer:
     def call_album_api(self):
         """ Call API for more songs when playing by tag """
         sort = random.choice(['pop', 'new'])
-        hub_data = {'tag': self.tag, 'page': self.page, 'sort': sort}
+        hub_data = {"filters": {"format": "all", "location": 0, "sort": sort, "tags": self.tags}, "page": self.page}
         try:
             r = requests.post(self.hub_url, json=hub_data, headers=HEADERS)
             return r.json()
@@ -214,7 +213,7 @@ class Tagplayer:
             self.page = random.randint(1, 3) if not self.page else random.randint(self.page, 30)
 
         if self.page_limit and self.page_limit < 3:
-            Messages().few_tag_results(self.tag)
+            Messages().few_tag_results(self.tags)
 
         while True:
             ar = self.call_album_api()
@@ -232,7 +231,7 @@ class Tagplayer:
             else:
                 continue
 
-        Messages().results_found(self.tag)
+        Messages().results_found(self.tags)
         albums = []
         genres = []
         for i in ar['items']:
@@ -360,13 +359,13 @@ def main():
     """
     import argparse
     p = argparse.ArgumentParser(description='Creates mpd playlists from Bandcamp genre tags.')
-    p.add_argument('tag', help='Music genre', nargs='?', default=None)
-    p.add_argument('-t', '--tag', help='Music genre', action='store', dest='tag2', metavar='tag', default=None)
+    p.add_argument('tags', metavar='tags', type=str, nargs='*', help='Music genre(s)', default=None)
+    p.add_argument('-t', '--tags', help='Music genre(s).', action='store', dest='tags2', metavar='tags', default=None, nargs='+')
     p.add_argument('-u', '--user', help='Bandcamp username', action='store', metavar='user', default=None)
     args = p.parse_args()
 
     try:
-        with Tagplayer(tag=(args.tag or args.tag2), user=args.user) as tp:
+        with Tagplayer(tags=(args.tags or args.tags2), user=args.user) as tp:
             tp.check_tag()
     except Exception as e:
         print(f'ERROR: {e}')
