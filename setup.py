@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 if sys.version_info < (3, 6):
     sys.exit("Bandcamp_tagplayer requires python >= 3.6.")
 
-VERSION = '2.3'
+VERSION = '2.3.1'
 
 with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as f:
     required = f.read().splitlines()

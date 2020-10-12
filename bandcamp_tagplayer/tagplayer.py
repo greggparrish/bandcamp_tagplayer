@@ -253,6 +253,7 @@ class Tagplayer:
           get metadata (artist, title, album, url, date, dl_url) for that song
         """
         r_albums = self.grab_four(albums)
+        band_ids = []
         for a in r_albums:
             try:
                 r = requests.get(a, headers=HEADERS)
@@ -267,36 +268,39 @@ class Tagplayer:
                 self.related_tags = set(at)
                 # check track to make sure not tagged with banned genre
                 if soup and set(tag_list).isdisjoint(BANNED_GENRES):
-                    artist = soup.find('span', itemprop='byArtist')
-                    if artist:
-                        all_js = soup.find_all('script', type='text/javascript')
-                        for j in all_js:
-                            tralbum = j.get('data-tralbum')
-                            if tralbum:
-                                break
-                        if not tralbum:
-                            continue
-                        t_json = json.loads(tralbum)
-                        track_info = t_json["trackinfo"]
-                        s = random.choice(track_info)
-                        if s.get('file') is not None:
-                            isodate = t_json.get('current').get('release_date')
-                            date = datetime.datetime.strptime(isodate, '%d %b %Y %H:%M:%S %Z').strftime("%Y-%m-%d") if isodate else ""
-                            metadata = {
-                                'artist': t_json.get('artist'),
-                                'artist_id': f'{t_json.get("current").get("band_id")}',
-                                'title': f'{s.get("title")}',
-                                'track': f'{s.get("track_num")}',
-                                'track_id': f'{s.get("track_id")}',
-                                'album': t_json.get('current').get('title'),
-                                'date': date,
-                                'album_url': a,
-                                'dl_url': s['file'].get('mp3-128'),
-                                'genre': ', '.join(set(tag_list)),
-                            }
-                            ban_check = db.Database.check_ban(metadata['artist_id'], metadata['track_id'])
-                            if not ban_check:
-                                self.download_song(metadata)
+                    all_js = soup.find_all('script', type='text/javascript')
+                    for j in all_js:
+                        tralbum = j.get('data-tralbum')
+                        if tralbum:
+                            break
+                    if not tralbum:
+                        continue
+                    t_json = json.loads(tralbum)
+                    band_id = t_json.get("current").get("band_id")
+                    if band_id in band_ids:
+                        continue
+                    else:
+                        band_ids.append(band_id)
+                    track_info = t_json["trackinfo"]
+                    s = random.choice(track_info)
+                    if s.get('file') is not None:
+                        isodate = t_json.get('current').get('release_date')
+                        date = datetime.datetime.strptime(isodate, '%d %b %Y %H:%M:%S %Z').strftime("%Y-%m-%d") if isodate else ""
+                        metadata = {
+                            'artist': t_json.get('artist'),
+                            'artist_id': f'{band_id}',
+                            'title': f'{s.get("title")}',
+                            'track': f'{s.get("track_num")}',
+                            'track_id': f'{s.get("track_id")}',
+                            'album': t_json.get('current').get('title'),
+                            'date': date,
+                            'album_url': a,
+                            'dl_url': s['file'].get('mp3-128'),
+                            'genre': ', '.join(set(tag_list)),
+                        }
+                        ban_check = db.Database.check_ban(metadata['artist_id'], metadata['track_id'])
+                        if not ban_check:
+                            self.download_song(metadata)
         self.monitor_mpd()
 
     def download_song(self, metadata):
