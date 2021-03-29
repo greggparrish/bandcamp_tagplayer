@@ -25,6 +25,7 @@ class Config:
             'cache_dir': self.format_path(conf['storage']['cache']),
             'mpd_host': conf['mpd']['host'],
             'mpd_port': conf['mpd']['port'],
+            'mpd_password': conf['mpd']['password'],
             'banned_genres': conf['songs']['ban_list'],
             'music_dir': self.format_path(conf['mpd']['music_dir'])
         }
@@ -40,6 +41,7 @@ class Config:
         conf.set("mpd", "music_dir", "~/Music")
         conf.set("mpd", "host", "localhost")
         conf.set("mpd", "port", "6600")
+        conf.set("mpd", "password", "")
         conf.add_section("browser")
         conf.set("browser", "browser", "google-chrome")
         conf.add_section("songs")

@@ -17,6 +17,8 @@ class MPDConn:
     def __enter__(self):
         self.client = MPDClient()
         self.client.connect(c['mpd_host'], c['mpd_port'])
+        if c['mpd_password']:
+            self.client.password(c['mpd_password'])
         # 0 is random off, 1 is on
         # self.client.random(0)
         return self.client
