@@ -1,6 +1,7 @@
 import datetime
 import os
 import re
+import sys
 import time
 import webbrowser
 
@@ -9,7 +10,7 @@ from mutagen.easyid3 import EasyID3
 
 from .config import Config
 from . import db
-from .messages import Messages
+from .messages import msg_menu_choice
 
 cf = Config().conf_vars()
 
@@ -35,7 +36,7 @@ class Utils:
             os.path.join(
                 cf['music_dir'],
                 filename))['website'][0]
-        wb = webbrowser.get(cf['browser']).open(artist_url)
+        wb = webbrowser.open(artist_url)
         return wb
 
     def save_track_info(self, current_song):
@@ -89,27 +90,29 @@ class Utils:
                     print(term.clear())
                     print(term.normal)
                     self.clear_cache()
-                    exit()
+                    sys.exit()
                 if c == 'B':
                     ar_id = current_song.split('_')[3]
                     self.ban(ar_id, 0)
                     show = 'Banning artist'
-                    Messages().menu_choice(show)
+                    msg_menu_choice(show)
                 if c == 'b':
                     tr_id = current_song.split('_')[4].replace('.mp3', '')
                     self.ban(tr_id, 1)
                     show = 'Banning song'
-                    Messages().menu_choice(show)
+                    msg_menu_choice(show)
                 if c == 's':
                     show = f"Saving info to {cf['save_file']}"
-                    Messages().menu_choice(show)
+                    msg_menu_choice(show)
                     self.save_track_info(current_song)
                 if c == 'w':
                     try:
                         EasyID3(os.path.join(cf['music_dir'], current_song))['website'][0]
                         show = 'Opening Bandcamp page'
-                        Messages().menu_choice(show)
+                        msg_menu_choice(show)
                         self.browser(current_song)
+                        time.sleep(1)
+                        print(term.clear())
                     except BaseException:
                         print("No website saved in track meta.")
                         time.sleep(2)
