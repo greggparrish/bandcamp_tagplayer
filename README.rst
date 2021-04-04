@@ -20,7 +20,7 @@ INSTALL
 CONFIG
 ------
 - config file: ~/.config/bandcamp_tagplayer/config
-- set cache (dir for mp3s), mpd host, port, and music directory
+- set cache (dir for mp3s), mpd host, port, password and music directory
 - check out config.example for all options
 
 USAGE

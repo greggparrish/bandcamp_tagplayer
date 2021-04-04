@@ -35,11 +35,11 @@ class MPDQueue:
             sleep(5)
             try:
                 m.add(song)
-            except Exception as exc:
+            except:
                 try:
                     sleep(2)
                     m.add(song)
-                except Exception as exc:
+                except:
                     pass
 
     def watch_playlist(self, tags=None, user=None):

@@ -17,7 +17,7 @@ from mutagen.easyid3 import EasyID3
 from .config import Config
 from . import db
 from .mpd_queue import MPDQueue
-from .messages import Messages
+from .messages import msg_now_loading, msg_related_tags, msg_results_found, msg_few_tag_results, msg_missing_music_dir, msg_update_error, msg_connection_error
 from .utils import Utils
 
 c = Config().conf_vars()
@@ -41,10 +41,18 @@ class Tagplayer:
     def __enter__(self):
         """ Symlink mpd dir, clear out old downloads, update MPD """
         ut = Utils()
-        ut.symlink_musicdir()
+        try:
+            ut.symlink_musicdir()
+        except:
+            msg_missing_music_dir(c["music_dir"])
+            sys.exit()
         ut.clear_cache()
         db.Database()
-        MPDQueue().update_mpd()
+        try:
+            MPDQueue().update_mpd()
+        except Exception as e:
+            msg_update_error(e)
+            sys.exit()
         return self
 
     def __exit__(self, exc_class, exc, traceback):
@@ -123,7 +131,7 @@ class Tagplayer:
 
     def no_results(self):
         """ Prints no results msg to terminal, asks for a new tag """
-        Messages().no_tag_results(self.tags)
+        msg_no_tag_results(self.tags)
         sleep(1)
         self.ask_for_tag()
 
@@ -213,7 +221,7 @@ class Tagplayer:
             self.page = random.randint(1, 3) if not self.page else random.randint(self.page, 30)
 
         if self.page_limit and self.page_limit < 3:
-            Messages().few_tag_results(self.tags)
+            msg_few_tag_results(self.tags)
 
         while True:
             ar = self.call_album_api()
@@ -231,7 +239,7 @@ class Tagplayer:
             else:
                 continue
 
-        Messages().results_found(self.tags)
+        msg_results_found(self.tags)
         albums = []
         genres = []
         for i in ar['items']:
@@ -244,7 +252,7 @@ class Tagplayer:
             self.related_tags = genres
         else:
             self.related_tags = set([a for a in at if a]) if at else genres
-        Messages().related_tags(', '.join(set(self.related_tags)))
+        msg_related_tags(', '.join(set(self.related_tags)))
         self.get_song_meta(set(albums))
 
     def get_song_meta(self, albums):
@@ -317,10 +325,10 @@ class Tagplayer:
         else:
             try:
                 r = requests.get(dl_url, stream=dl_url, headers=HEADERS)
-            except requests.exceptions.RequestException as e:
-                print(e)
+            except:
+                msg_connection_error()
                 quit()
-            Messages().now_loading(metadata['artist'], metadata['title'])
+            msg_now_loading(metadata['artist'], metadata['title'])
             with open(path, 'wb') as t:
                 total_length = int(r.headers.get('content-length', 0))
                 for chunk in progress.bar(r.iter_content(

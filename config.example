@@ -1,6 +1,7 @@
 [mpd]
 music_dir = ~/music
 host = localhost
+password = SecretPass
 port = 6600
 
 [storage]
@@ -8,6 +9,3 @@ cache = ~/.config/bandcamp_tagplayer/cache
 
 [songs]
 ban_list = noise, jazz, experimental, canada, funk, psychedelic
-
-[browser]
-browser = google-chrome

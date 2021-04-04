@@ -21,11 +21,10 @@ class Config:
 
     def conf_vars(self):
         conf_vars = {
-            'browser': conf['browser']['browser'],
             'cache_dir': self.format_path(conf['storage']['cache']),
             'mpd_host': conf['mpd']['host'],
             'mpd_port': conf['mpd']['port'],
-            'mpd_password': conf['mpd']['password'],
+            'mpd_password': conf['mpd']['password'] if conf.has_option('mpd', 'password') else '',
             'banned_genres': conf['songs']['ban_list'],
             'music_dir': self.format_path(conf['mpd']['music_dir'])
         }
@@ -38,12 +37,10 @@ class Config:
         conf.add_section("storage")
         conf.set("storage", "cache", "~/.config/bandcamp_tagplayer/bct_cache")
         conf.add_section("mpd")
-        conf.set("mpd", "music_dir", "~/Music")
         conf.set("mpd", "host", "localhost")
-        conf.set("mpd", "port", "6600")
+        conf.set("mpd", "music_dir", "~/Music")
         conf.set("mpd", "password", "")
-        conf.add_section("browser")
-        conf.set("browser", "browser", "google-chrome")
+        conf.set("mpd", "port", "6600")
         conf.add_section("songs")
         conf.set("songs", "ban_list", "")
         with open(path, "w") as config_file:
