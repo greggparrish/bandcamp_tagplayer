@@ -189,6 +189,8 @@ class Tagplayer:
 
     def grab_four(self, items):
         """ Return 4 items from list, or all if less than 4 """
+        if type(items) is not list:
+            items = sorted(items)
         if len(items) > 4:
             return random.sample(items, 4)
         else:
